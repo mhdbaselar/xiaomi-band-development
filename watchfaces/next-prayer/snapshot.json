@@ -1,0 +1,14 @@
+{
+  "kind": "static-demo-only",
+  "at": "2026-10-16T10:08:00+02:00",
+  "timezone": "Europe/Berlin",
+  "sourceUrl": "https://mawaqit.net/de/msjd-hlh-zlh-halle-saale-06122-germany",
+  "fetchedAt": "2026-10-16T17:46:12.231Z",
+  "prayer": {
+    "id": "dhuhr",
+    "label": "Dhuhr",
+    "time": "12:58",
+    "at": 1792148280000
+  },
+  "countdown": "02:50:00"
+}

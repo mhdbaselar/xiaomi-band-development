@@ -1,0 +1,16 @@
+{
+  "name": "next-prayer-watchface",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "generate": "node tools/generate.mjs",
+    "check": "node tools/toolkit.mjs check",
+    "validate": "node tools/toolkit.mjs validate",
+    "build": "node tools/toolkit.mjs build",
+    "package": "node tools/toolkit.mjs package",
+    "inspect": "node tools/toolkit.mjs inspect",
+    "preview": "node tools/toolkit.mjs preview"
+  }
+}

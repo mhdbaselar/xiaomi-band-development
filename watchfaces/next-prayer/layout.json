@@ -1,0 +1,90 @@
+{
+  "formatVersion": 1,
+  "canvas": {
+    "width": 212,
+    "height": 520,
+    "clip": "pill"
+  },
+  "assets": {
+    "digitSets": {
+      "clock": {
+        "digits": [
+          "assets/digits/0.svg",
+          "assets/digits/1.svg",
+          "assets/digits/2.svg",
+          "assets/digits/3.svg",
+          "assets/digits/4.svg",
+          "assets/digits/5.svg",
+          "assets/digits/6.svg",
+          "assets/digits/7.svg",
+          "assets/digits/8.svg",
+          "assets/digits/9.svg"
+        ],
+        "minus": "assets/digits/minus.svg"
+      }
+    }
+  },
+  "normal": {
+    "background": "#000000",
+    "widgets": [
+      {
+        "id": "location",
+        "type": "image",
+        "asset": "assets/location.svg",
+        "x": 30,
+        "y": 57,
+        "z": 1
+      },
+      {
+        "id": "hour",
+        "type": "number",
+        "source": "hour",
+        "digitSet": "clock",
+        "digits": 2,
+        "align": "left",
+        "spacing": 3,
+        "leadingZero": true,
+        "x": 37,
+        "y": 101,
+        "z": 1
+      },
+      {
+        "id": "colon",
+        "type": "image",
+        "asset": "assets/colon.svg",
+        "x": 103,
+        "y": 101,
+        "z": 1
+      },
+      {
+        "id": "minute",
+        "type": "number",
+        "source": "minute",
+        "digitSet": "clock",
+        "digits": 2,
+        "align": "left",
+        "spacing": 3,
+        "leadingZero": true,
+        "x": 116,
+        "y": 101,
+        "z": 1
+      },
+      {
+        "id": "prayer",
+        "type": "image",
+        "asset": "assets/prayer.svg",
+        "x": 20,
+        "y": 183,
+        "z": 1
+      },
+      {
+        "id": "demo",
+        "type": "image",
+        "asset": "assets/demo.svg",
+        "x": 24,
+        "y": 382,
+        "z": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "122880001",
+  "name": "Prayer Feasibility Demo",
+  "author": "Basel",
+  "version": "0.1.0",
+  "description": "Machbarkeitstest: native Uhrzeit mit festem Gebetsbeispiel vom 16.10.2026. Kein laufender Gebetscountdown.",
+  "license": "MIT",
+  "device": "xiaomi-smart-band-10",
+  "preview": "generated",
+  "output": "next-prayer-demo",
+  "compiler": { "target": "native", "imageCompression": true }
+}
