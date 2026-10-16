@@ -1,0 +1,45 @@
+<template>
+  <div class="page">
+    <text class="back" onclick="goBack">Zurück</text>
+    <list class="details">
+      <list-item for="{{ lines }}" type="line" class="line">
+        <text class="line-text" style="color: {{ $item.color }};">{{ $item.text }}</text>
+      </list-item>
+    </list>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import calendar from '../../common/calendar.json'
+import { shortDate } from '../../common/prayers'
+
+export default {
+  private: { lines: [] },
+  onInit() {
+    var text = [
+      'IKC Halle (Saale)', 'Am Meeresbrunnen 3',
+      'Quelle: MAWAQIT', 'Moschee-ID 12288',
+      'Offline-Kalender',
+      'Stand: ' + shortDate(calendar.days[0].date) + calendar.days[0].date.slice(0, 4),
+      'Bis: ' + shortDate(calendar.days[calendar.days.length - 1].date) + calendar.days[calendar.days.length - 1].date.slice(0, 4),
+      'Zeitzone: Berlin',
+      'Countdown zum Adhan.', 'Iqama nicht enthalten.',
+      'Freitagsgebet separat:', calendar.jumua.join(' / ') + ' Uhr',
+      'Änderungen der Moschee', 'erfordern neue Daten.',
+      'Keine Hintergrundalarme.', 'Kalender am PC laden,', 'App neu installieren.',
+      'Inoffizielle App.'
+    ]
+    this.lines = text.map(function (line, i) {
+      return { text: line, color: i === 0 || i === 4 ? '#79e2b4' : '#d1ddd6' }
+    })
+  },
+  goBack() { router.back() }
+}
+</script>
+<style>
+.page { flex-direction: column; align-items: center; background-color: #000000; padding-top: 28px; padding-bottom: 28px; }
+.back { width: 140px; height: 44px; font-size: 19px; text-align: center; color: #79e2b4; background-color: #0d2119; border-radius: 22px; margin-bottom: 10px; }
+.details { flex: 1; width: 184px; }
+.line { height: 30px; justify-content: center; }
+.line-text { width: 184px; font-size: 15px; text-align: center; }
+</style>

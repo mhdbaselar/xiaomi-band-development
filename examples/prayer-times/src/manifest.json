@@ -1,0 +1,20 @@
+{
+  "package": "de.halle.gebetszeiten",
+  "name": "Gebetszeiten",
+  "versionName": "0.1.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1000,
+  "minAPILevel": 1,
+  "icon": "/common/icon.png",
+  "deviceTypeList": ["watch"],
+  "features": [{ "name": "system.router" }],
+  "config": { "logLevel": "warn", "designWidth": 212 },
+  "display": { "backgroundColor": "#000000" },
+  "router": {
+    "entry": "pages/index",
+    "pages": {
+      "pages/index": { "component": "index" },
+      "pages/info": { "component": "info" }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+<template>
+  <div class="page">
+    <text class="location">HALLE (SAALE)</text>
+    <text class="date">{{ dateLabel }}</text>
+    <div class="hero">
+      <text class="eyebrow">{{ heading }}</text>
+      <text class="prayer-name">{{ nextName }}</text>
+      <text class="prayer-time">{{ nextTime }}</text>
+      <text class="countdown">{{ countdown }}</text>
+      <text class="countdown-label">{{ countdownLabel }}</text>
+    </div>
+    <div class="times">
+      <div for="{{ rows }}" class="row">
+        <text class="row-name" style="color: {{ $item.color }};">{{ $item.label }}</text>
+        <text class="row-time" style="color: {{ $item.color }};">{{ $item.time }}</text>
+      </div>
+    </div>
+    <text class="sunrise">{{ sunrise }}</text>
+    <text class="info-button" onclick="showInfo">{{ sourceLabel }}</text>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import calendar from '../../common/calendar.json'
+import { getPrayerState, shortDate } from '../../common/prayers'
+
+var timer = null
+var lastRowsKey = ''
+var labels = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+
+export default {
+  private: {
+    dateLabel: '', heading: 'Nächstes Gebet', nextName: '', nextTime: '',
+    countdown: '--:--:--', countdownLabel: 'STUNDEN : MIN : SEK', rows: [],
+    sunrise: '', sourceLabel: 'Offline · Info'
+  },
+  onInit() {
+    lastRowsKey = ''
+    this.sourceLabel = 'Stand ' + shortDate(calendar.days[0].date) + ' · Info'
+    this.refresh()
+  },
+  onShow() {
+    this.stopTimer()
+    this.refresh()
+    var page = this
+    timer = setInterval(function () { page.refresh() }, 1000)
+  },
+  onHide() { this.stopTimer() },
+  onDestroy() { this.stopTimer() },
+  stopTimer() {
+    if (timer !== null) clearInterval(timer)
+    timer = null
+  },
+  refresh() {
+    // Always calculate from the current clock, including after sleep/resume.
+    var state = getPrayerState(calendar, Date.now())
+    var next = state.next
+    this.dateLabel = state.day ? shortDate(state.day.date) + ' · IKC Halle' : 'IKC Halle · Offline'
+    this.heading = state.status === 'due' ? 'Jetzt ist Gebetszeit' : 'Nächstes Gebet'
+    this.nextName = next ? next.label : 'Keine Zeiten'
+    this.nextTime = next ? (state.tomorrow ? 'Morgen · ' : 'Heute · ') + next.time : 'Kalender erneuern'
+    this.countdown = state.countdown
+    this.countdownLabel = state.status === 'due' ? 'JETZT' : (next ? 'BIS ZUM ADHAN' : 'SIEHE INFO')
+    this.sunrise = state.day ? 'Sonnenaufgang  ' + state.day.sunrise : 'Keine aktuellen Daten'
+    var key = (state.day ? state.day.date : '') + ':' + (next ? next.at : '')
+    if (key !== lastRowsKey || this.rows.length === 0) {
+      this.rows = labels.map(function (label, index) {
+        var prayer = state.day ? state.day.prayers[index] : null
+        return { label: label, time: prayer ? prayer.time : '--:--',
+          color: prayer && next && prayer.at === next.at ? '#79e2b4' : '#e2e9e5' }
+      })
+      lastRowsKey = key
+    }
+  },
+  showInfo() { router.push({ uri: '/pages/info' }) }
+}
+</script>
+
+<style>
+.page { flex-direction: column; align-items: center; background-color: #000000; padding-top: 28px; padding-left: 16px; padding-right: 16px; }
+.location { height: 22px; font-size: 17px; color: #e2e9e5; text-align: center; font-weight: bold; }
+.date { height: 22px; font-size: 14px; color: #99aaa2; text-align: center; }
+.hero { width: 180px; height: 148px; margin-top: 8px; margin-bottom: 8px; border-radius: 18px; background-color: #0d2119; flex-direction: column; align-items: center; justify-content: center; }
+.eyebrow { height: 22px; font-size: 14px; color: #a0b9ab; text-align: center; }
+.prayer-name { height: 34px; font-size: 29px; font-weight: bold; color: #79e2b4; text-align: center; }
+.prayer-time { height: 24px; font-size: 17px; color: #e2e9e5; text-align: center; }
+.countdown { height: 40px; font-size: 33px; font-weight: bold; color: #ffffff; text-align: center; }
+.countdown-label { height: 18px; font-size: 11px; color: #a0b9ab; text-align: center; }
+.times { width: 172px; flex-direction: column; }
+.row { width: 172px; height: 36px; flex-direction: row; align-items: center; justify-content: space-between; }
+.row-name { font-size: 19px; }
+.row-time { font-size: 20px; font-weight: bold; text-align: right; }
+.sunrise { height: 28px; font-size: 13px; color: #99aaa2; text-align: center; }
+.info-button { width: 158px; height: 40px; font-size: 14px; text-align: center; color: #a0b9ab; background-color: #111a16; border-radius: 20px; }
+</style>

@@ -1,0 +1,1155 @@
+{
+  "schemaVersion": 1,
+  "mosque": "Islamisches Kulturcenter Halle (Saale)",
+  "mosqueId": 12288,
+  "sourceUrl": "https://mawaqit.net/de/msjd-hlh-zlh-halle-saale-06122-germany",
+  "sourceType": "public-display-snapshot",
+  "timezone": "Europe/Berlin",
+  "fetchedAt": "2026-10-16T17:46:12.231Z",
+  "jumua": [
+    "13:30",
+    "15:00"
+  ],
+  "days": [
+    {
+      "date": "2026-10-16",
+      "start": 1792101600000,
+      "end": 1792188000000,
+      "sunrise": "07:37",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:08",
+          "at": 1792123680000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:58",
+          "at": 1792148280000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:43",
+          "at": 1792158180000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:18",
+          "at": 1792167480000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:48",
+          "at": 1792172880000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-17",
+      "start": 1792188000000,
+      "end": 1792274400000,
+      "sunrise": "07:39",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:10",
+          "at": 1792210200000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:58",
+          "at": 1792234680000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:41",
+          "at": 1792244460000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:15",
+          "at": 1792253700000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:45",
+          "at": 1792259100000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "start": 1792274400000,
+      "end": 1792360800000,
+      "sunrise": "07:41",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:11",
+          "at": 1792296660000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:58",
+          "at": 1792321080000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:39",
+          "at": 1792330740000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:13",
+          "at": 1792339980000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:43",
+          "at": 1792345380000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-19",
+      "start": 1792360800000,
+      "end": 1792447200000,
+      "sunrise": "07:42",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:13",
+          "at": 1792383180000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:58",
+          "at": 1792407480000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:38",
+          "at": 1792417080000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:11",
+          "at": 1792426260000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:41",
+          "at": 1792431660000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-20",
+      "start": 1792447200000,
+      "end": 1792533600000,
+      "sunrise": "07:44",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:14",
+          "at": 1792469640000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:58",
+          "at": 1792493880000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:36",
+          "at": 1792503360000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:09",
+          "at": 1792512540000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:39",
+          "at": 1792517940000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-21",
+      "start": 1792533600000,
+      "end": 1792620000000,
+      "sunrise": "07:46",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:16",
+          "at": 1792556160000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:57",
+          "at": 1792580220000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:35",
+          "at": 1792589700000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:07",
+          "at": 1792598820000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:37",
+          "at": 1792604220000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-22",
+      "start": 1792620000000,
+      "end": 1792706400000,
+      "sunrise": "07:48",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:18",
+          "at": 1792642680000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:57",
+          "at": 1792666620000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:33",
+          "at": 1792675980000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:05",
+          "at": 1792685100000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:35",
+          "at": 1792690500000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-23",
+      "start": 1792706400000,
+      "end": 1792792800000,
+      "sunrise": "07:49",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:19",
+          "at": 1792729140000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:57",
+          "at": 1792753020000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:31",
+          "at": 1792762260000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:03",
+          "at": 1792771380000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:33",
+          "at": 1792776780000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-24",
+      "start": 1792792800000,
+      "end": 1792879200000,
+      "sunrise": "07:51",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "06:21",
+          "at": 1792815660000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "12:57",
+          "at": 1792839420000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "15:30",
+          "at": 1792848600000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "18:01",
+          "at": 1792857660000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "19:31",
+          "at": 1792863060000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-25",
+      "start": 1792879200000,
+      "end": 1792969200000,
+      "sunrise": "06:53",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:22",
+          "at": 1792902120000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1792925820000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:28",
+          "at": 1792934880000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:59",
+          "at": 1792943940000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:29",
+          "at": 1792949340000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-26",
+      "start": 1792969200000,
+      "end": 1793055600000,
+      "sunrise": "06:55",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:24",
+          "at": 1792988640000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1793012220000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:27",
+          "at": 1793021220000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:57",
+          "at": 1793030220000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:27",
+          "at": 1793035620000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-27",
+      "start": 1793055600000,
+      "end": 1793142000000,
+      "sunrise": "06:56",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:25",
+          "at": 1793075100000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1793098620000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:25",
+          "at": 1793107500000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:55",
+          "at": 1793116500000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:25",
+          "at": 1793121900000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-28",
+      "start": 1793142000000,
+      "end": 1793228400000,
+      "sunrise": "06:58",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:27",
+          "at": 1793161620000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1793185020000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:24",
+          "at": 1793193840000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:53",
+          "at": 1793202780000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:23",
+          "at": 1793208180000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-29",
+      "start": 1793228400000,
+      "end": 1793314800000,
+      "sunrise": "07:00",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:29",
+          "at": 1793248140000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793271360000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:22",
+          "at": 1793280120000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:51",
+          "at": 1793289060000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:21",
+          "at": 1793294460000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "start": 1793314800000,
+      "end": 1793401200000,
+      "sunrise": "07:02",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:30",
+          "at": 1793334600000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793357760000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:21",
+          "at": 1793366460000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:50",
+          "at": 1793375400000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:20",
+          "at": 1793380800000
+        }
+      ]
+    },
+    {
+      "date": "2026-10-31",
+      "start": 1793401200000,
+      "end": 1793487600000,
+      "sunrise": "07:03",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:32",
+          "at": 1793421120000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793444160000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:19",
+          "at": 1793452740000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:48",
+          "at": 1793461680000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:18",
+          "at": 1793467080000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-01",
+      "start": 1793487600000,
+      "end": 1793574000000,
+      "sunrise": "07:05",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:33",
+          "at": 1793507580000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793530560000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:18",
+          "at": 1793539080000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:46",
+          "at": 1793547960000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:16",
+          "at": 1793553360000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "start": 1793574000000,
+      "end": 1793660400000,
+      "sunrise": "07:07",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:35",
+          "at": 1793594100000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793616960000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:16",
+          "at": 1793625360000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:44",
+          "at": 1793634240000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:14",
+          "at": 1793639640000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "start": 1793660400000,
+      "end": 1793746800000,
+      "sunrise": "07:09",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:36",
+          "at": 1793680560000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793703360000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:15",
+          "at": 1793711700000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:42",
+          "at": 1793720520000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:12",
+          "at": 1793725920000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "start": 1793746800000,
+      "end": 1793833200000,
+      "sunrise": "07:10",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:38",
+          "at": 1793767080000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793789760000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:14",
+          "at": 1793798040000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:41",
+          "at": 1793806860000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:11",
+          "at": 1793812260000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "start": 1793833200000,
+      "end": 1793919600000,
+      "sunrise": "07:12",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:39",
+          "at": 1793853540000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793876160000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:12",
+          "at": 1793884320000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:39",
+          "at": 1793893140000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:09",
+          "at": 1793898540000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "start": 1793919600000,
+      "end": 1794006000000,
+      "sunrise": "07:14",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:41",
+          "at": 1793940060000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1793962560000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:11",
+          "at": 1793970660000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:37",
+          "at": 1793979420000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:07",
+          "at": 1793984820000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "start": 1794006000000,
+      "end": 1794092400000,
+      "sunrise": "07:16",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:42",
+          "at": 1794026520000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1794048960000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:10",
+          "at": 1794057000000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:36",
+          "at": 1794065760000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:06",
+          "at": 1794071160000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "start": 1794092400000,
+      "end": 1794178800000,
+      "sunrise": "07:17",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:44",
+          "at": 1794113040000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:56",
+          "at": 1794135360000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:08",
+          "at": 1794143280000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:34",
+          "at": 1794152040000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:04",
+          "at": 1794157440000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "start": 1794178800000,
+      "end": 1794265200000,
+      "sunrise": "07:19",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:45",
+          "at": 1794199500000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794221820000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:07",
+          "at": 1794229620000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:32",
+          "at": 1794238320000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:02",
+          "at": 1794243720000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-10",
+      "start": 1794265200000,
+      "end": 1794351600000,
+      "sunrise": "07:21",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:47",
+          "at": 1794286020000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794308220000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:06",
+          "at": 1794315960000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:31",
+          "at": 1794324660000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "18:01",
+          "at": 1794330060000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-11",
+      "start": 1794351600000,
+      "end": 1794438000000,
+      "sunrise": "07:23",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:48",
+          "at": 1794372480000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794394620000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:05",
+          "at": 1794402300000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:29",
+          "at": 1794410940000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "17:59",
+          "at": 1794416340000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-12",
+      "start": 1794438000000,
+      "end": 1794524400000,
+      "sunrise": "07:24",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:50",
+          "at": 1794459000000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794481020000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:04",
+          "at": 1794488640000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:28",
+          "at": 1794497280000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "17:58",
+          "at": 1794502680000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-13",
+      "start": 1794524400000,
+      "end": 1794610800000,
+      "sunrise": "07:26",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:51",
+          "at": 1794545460000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794567420000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:03",
+          "at": 1794574980000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:26",
+          "at": 1794583560000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "17:56",
+          "at": 1794588960000
+        }
+      ]
+    },
+    {
+      "date": "2026-11-14",
+      "start": 1794610800000,
+      "end": 1794697200000,
+      "sunrise": "07:28",
+      "prayers": [
+        {
+          "id": "fajr",
+          "label": "Fajr",
+          "time": "05:53",
+          "at": 1794631980000
+        },
+        {
+          "id": "dhuhr",
+          "label": "Dhuhr",
+          "time": "11:57",
+          "at": 1794653820000
+        },
+        {
+          "id": "asr",
+          "label": "Asr",
+          "time": "14:02",
+          "at": 1794661320000
+        },
+        {
+          "id": "maghrib",
+          "label": "Maghrib",
+          "time": "16:25",
+          "at": 1794669900000
+        },
+        {
+          "id": "isha",
+          "label": "Isha",
+          "time": "17:55",
+          "at": 1794675300000
+        }
+      ]
+    }
+  ]
+}

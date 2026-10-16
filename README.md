@@ -21,6 +21,7 @@ See the [multi-screen adaptation guide](https://iot.mi.com/vela/quickapp/en/guid
 
 - **`scripts/`** - CLI tools for building, deploying, and testing apps (no IDE required)
 - **`examples/songbird/`** - A working example app (Hebrew lullaby songbook for Mi Band 8 Pro)
+- **[`examples/prayer-times/`](examples/prayer-times/README.md)** - Prayer times and next-prayer countdown for Smart Band 10, with an offline MAWAQIT calendar for Halle (Saale)
 - **`docs/`** - Detailed documentation on the framework and deployment process
 
 ## Quick Start
