@@ -1,0 +1,18 @@
+{
+  "name": "prayer-daily-watchface",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build:lua": "node tools/build-lua.mjs",
+    "test:lua": "node --test tests/lua.test.mjs",
+    "build": "node tools/build-lua.mjs",
+    "package": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "test": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "check": "node --test tests/lua.test.mjs",
+    "validate": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "inspect": "node tools/inspect.mjs",
+    "preview": "node tools/build-lua.mjs && node tools/preview-lua.mjs"
+  }
+}

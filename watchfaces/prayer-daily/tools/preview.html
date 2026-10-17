@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Halle Prayer Daily · Watchface-Vorschau</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #111817; color: #eeeae2; font: 16px system-ui,sans-serif; }
+  main { max-width: 940px; margin: auto; padding: 54px 24px; display: flex; align-items: center; gap: 80px; min-height: 100vh; }
+  .band { position: relative; width: 224px; height: 532px; flex: 0 0 auto; border: 6px solid #38413f; border-radius: 115px; background: #000; overflow: hidden; box-shadow: 0 25px 70px #0008; }
+  .label { position: absolute; text-align: center; line-height: 1.15; white-space: nowrap; font-family: Arial,sans-serif; }
+  .eyebrow { color: #85c9ad; letter-spacing: .14em; font-size: 12px; text-transform: uppercase; }
+  h1 { font-weight: 500; font-size: 40px; line-height: 1.1; margin: 20px 0; }
+  p { color: #9aaea5; line-height: 1.6; }
+  .live { margin-top: 32px; color: #85c9ad; }
+  .live::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 8px; }
+  small { display: block; color: #9aaea5; line-height: 1.5; }
+  .info { max-width: 430px; }
+  fieldset { margin: 24px 0 12px; padding: 18px; border: 1px solid #34433d; border-radius: 12px; }
+  legend { padding: 0 6px; color: #b9cdc2; font-size: 13px; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  .controls label { color: #9aaea5; font-size: 13px; }
+  input[type=number], select { display: block; width: 100%; margin-top: 6px; padding: 9px; border: 1px solid #405349; border-radius: 6px; background: #19251e; color: #eeeae2; font: inherit; }
+  .toggle { font-size: 14px; color: #b9cdc2; }
+  @media (max-width: 620px) { main { flex-direction: column; gap: 35px; padding-top: 32px; } .info { max-width: 350px; } h1 { font-size: 30px; } }
+</style>
+<main>
+  <div class="band" role="img" aria-label="Watchface mit laufendem Gebetscountdown" id="band"></div>
+  <div class="info">
+    <div class="eyebrow">Halle Prayer Daily · Smart Band 10</div>
+    <h1>Gebetscountdown<br>&amp; Alltag</h1>
+    <p>Uhrzeit und Datum oben, Countdown in der Mitte. Darunter Wetter, Akku, Schritte und Puls.</p>
+    <fieldset>
+      <legend>Band-Daten ausprobieren</legend>
+      <label class="toggle"><input type="checkbox" id="simulate" checked> Beispielwerte anzeigen</label>
+      <div class="controls">
+        <label>Akku (%)<input id="battery" type="number" min="0" max="100" value="90"></label>
+        <label>Temperatur (°C)<input id="temperature" type="number" min="-99" max="99" value="10"></label>
+        <label>Wetter<select id="weather"><option value="0">Klar</option><option value="1" selected>Wolkig</option><option value="2">Bedeckt</option><option value="7">Regen</option><option value="4">Gewitter</option><option value="14">Schnee</option><option value="18">Nebel</option><option value="99">Keine Daten</option></select></label>
+        <label>Schritte<input id="steps" type="number" min="0" max="99999" value="3024"></label>
+        <label>Puls (bpm)<input id="pulse" type="number" min="20" max="300" value="72"></label>
+      </div>
+    </fieldset>
+    <p class="live" id="status">Lua wird gestartet …</p>
+    <small>Der Countdown läuft mit dem Gebetskalender für Halle. Band-Werte sind hier simuliert; auf dem Band werden die vorhandenen Gerätewerte verwendet. Die Darstellung auf dem echten Band muss noch geprüft werden.</small>
+  </div>
+</main>
+<script>
+  const band = document.querySelector('#band');
+  const status = document.querySelector('#status');
+  let labels = [];
+  async function tick() {
+    try {
+      const query = new URLSearchParams();
+      if (document.querySelector('#simulate').checked) {
+        for (const key of ['battery', 'temperature', 'weather', 'steps', 'pulse']) {
+          query.set(key, document.getElementById(key).value);
+        }
+      }
+      const response = await fetch('/state?' + query);
+      if (!response.ok) throw new Error('Lua unavailable');
+      const state = await response.json();
+      if (labels.length !== state.labels.length) {
+        band.replaceChildren();
+        labels = state.labels.map(() => {
+          const element = document.createElement('span');
+          element.className = 'label'; band.append(element); return element;
+        });
+      }
+      state.labels.forEach((label, index) => {
+        const element = labels[index];
+        element.textContent = label.text;
+        element.style.top = label.y + 'px';
+        element.style.left = label.x + 'px';
+        element.style.width = label.w + 'px';
+        element.style.height = label.h + 'px';
+        element.style.fontSize = label.size + 'px';
+        element.style.color = '#' + label.color.toString(16).padStart(6, '0');
+      });
+      status.textContent = 'Live · ' + new Date(state.at * 1000).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' });
+    } catch {
+      // Do not leave an apparently live, frozen countdown on screen.
+      band.replaceChildren(); labels = [];
+      status.textContent = 'Verbindung zur Lua-Vorschau unterbrochen';
+    } finally { setTimeout(tick, 1000); }
+  }
+  tick();
+</script>
+</html>
