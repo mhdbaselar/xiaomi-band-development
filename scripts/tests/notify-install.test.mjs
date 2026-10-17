@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { inspectNotifyUI, isImporterForeground, installNotify } from '../notify-install.mjs'
-import { notifyUI, foreground, importer } from './fixtures/notify-ui.mjs'
+import { notifyUI, foreground, importer, appImporter, appForeground } from './fixtures/notify-ui.mjs'
 
 test('finds the enabled Install button by resource ID and its current bounds', () => {
   const state = inspectNotifyUI(notifyUI({ bounds: '[20,80][220,160]' }))
@@ -73,4 +73,24 @@ test('a failed or unconfirmed upload never triggers another install click', asyn
   const timedOut = harness([notifyUI(), notifyUI({ status: 'Installing', progress: 100 })])
   await assert.rejects(installNotify(timedOut.settings), /kein zweites Mal/)
   assert.equal(timedOut.taps.length, 1)
+})
+
+test('app uploads require Valid app file; firmware and watchface statuses never enable Install', async () => {
+  const app = notifyUI({ kind: 'app', status: 'Valid app file!' })
+  assert.equal(inspectNotifyUI(app, 'app').ready, true)
+  assert.equal(inspectNotifyUI(app, 'watchface').ready, false)
+  assert.equal(inspectNotifyUI(notifyUI(), 'app').ready, false)
+  for (const status of ['Valid firmware file!', 'Valid file!', 'Invalid app file!']) {
+    const screen = notifyUI({ kind: 'app', status })
+    assert.equal(inspectNotifyUI(screen, 'app').ready, false)
+    const run = harness([screen], appForeground)
+    await assert.rejects(installNotify({ ...run.settings, kind: 'app', component: appImporter }))
+    assert.equal(run.taps.length, 0)
+  }
+  const run = harness([app, notifyUI({ kind: 'app', status: 'Update completed', enabled: false })], appForeground)
+  assert.equal((await installNotify({ ...run.settings, kind: 'app', component: appImporter })).installed, true)
+  assert.equal(run.taps.length, 1)
+  const wrongImporter = harness([app], foreground)
+  await assert.rejects(installNotify({ ...wrongImporter.settings, kind: 'app', component: appImporter }), /nicht im Vordergrund/)
+  assert.equal(wrongImporter.taps.length, 0)
 })

@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { deployNotify, parseArgs, selectDevice } from '../deploy-notify.mjs'
 import { packLuaFace } from '../../watchfaces/next-prayer/tools/lua-format.mjs'
-import { notifyUI, foreground } from './fixtures/notify-ui.mjs'
+import { notifyUI, foreground, appImporter, appForeground } from './fixtures/notify-ui.mjs'
 
 async function fixture(id = '122880006') {
   const root = await mkdtemp(path.join(tmpdir(), 'notify deploy '))
@@ -19,24 +19,45 @@ async function fixture(id = '122880006') {
   return { root, artifact, binary, sha256: createHash('sha256').update(binary).digest('hex') }
 }
 
-function phone({ sha256, binary, handlers = true } = {}) {
+async function appFixture() {
+  const root = await mkdtemp(path.join(tmpdir(), 'notify app '))
+  const project = path.join(root, "prayer's app")
+  const manifest = { package: 'de.halle.gebetszeiten', name: 'Gebetszeiten', versionName: '0.2.0', versionCode: 2 }
+  const artifact = path.join(project, 'dist/de.halle.gebetszeiten.debug.0.2.0.rpk')
+  await mkdir(path.join(project, 'src'), { recursive: true })
+  await mkdir(path.dirname(artifact), { recursive: true })
+  await writeFile(path.join(project, 'src/manifest.json'), JSON.stringify(manifest))
+  // Stub archive extraction here; the integration check uses unzip on the built RPK.
+  const binary = Buffer.from('504b030400010203', 'hex')
+  await writeFile(artifact, binary)
+  return { root, project, artifact, binary, packaged: manifest, kind: 'app' }
+}
+
+function phone({ sha256, binary, handlers = true, kind = 'watchface', packaged,
+  entries = 'manifest.json\napp.js\nMETA-INF/CERT\n' } = {}) {
   const calls = []
   let uiReads = 0
   const run = (command, args, options) => {
     calls.push({ command, args, options })
+    if (command === 'unzip') return args[0] === '-p' ? JSON.stringify(packaged) : entries
     if (args[0] === 'devices') return 'List of devices attached\nemulator-5554 device\nphone-one device model:Test\n'
     const remote = args.at(-1)
     if (remote.includes("'am' 'get-current-user'")) return '0\n'
     if (remote.includes("'pm' 'path'")) return 'package:/data/app/notify/base.apk\n'
-    if (remote.includes("'query-activities'")) return handlers ?
-      'com.mc.xiaomi1/.ui.updateFirmware.UpdateFirmwareActivity\ncom.mc.xiaomi1/.ui.watchfaces.WatchfaceUploadActivity\n' : 'No activities found\n'
+    if (remote.includes("'query-activities'")) {
+      if (typeof handlers === 'string') return handlers
+      if (!handlers) return 'No activities found\n'
+      return (remote.includes('.rpk') ? `${appImporter}\n` : '') +
+        'com.mc.xiaomi1/.ui.watchfaces.WatchfaceUploadActivity\n'
+    }
     if (remote.includes("'sha256sum'")) return `${sha256}  watchface.face\n`
     if (remote.includes("'content' 'query'")) return 'Row: 0 _id=987\n'
     if (remote.includes("'content' 'read'")) return binary
     if (remote.includes("'uiautomator' 'dump'")) return 'UI hierchary dumped to: /data/local/tmp/notify.xml\n'
-    if (args[2] === 'exec-out' && args[3] === 'cat') return uiReads++ === 0 ? notifyUI() :
-      notifyUI({ status: 'Update completed', enabled: false, progress: 100 })
-    if (remote.includes("'dumpsys' 'activity' 'activities'")) return foreground
+    if (args[2] === 'exec-out' && args[3] === 'cat') return uiReads++ === 0 ?
+      notifyUI({ kind, status: kind === 'app' ? 'Valid app file!' : 'Valid watchface!' }) :
+      notifyUI({ kind, status: 'Update completed', enabled: false, progress: 100 })
+    if (remote.includes("'dumpsys' 'activity' 'activities'")) return kind === 'app' ? appForeground : foreground
     if (remote.includes("'am' 'start'")) return 'Status: ok\nActivity: com.mc.xiaomi1/.ui.watchfaces.WatchfaceUploadActivity\n'
     return ''
   }
@@ -132,4 +153,58 @@ test('dry-run works without artifacts, builds or an Android connection', async (
   assert.match(output.join('\n'), /next-prayer-lua.face/)
   assert.throws(() => parseArgs(['--watchface']), /Wert/)
   assert.throws(() => parseArgs(['--watchface', 'unknown']), /daily oder original/)
+  assert.throws(() => parseArgs(['--app']), /Wert/)
+  assert.throws(() => parseArgs(['--watchface', 'daily', '--app', '.']), /nicht zusammen/)
+})
+
+test('builds and installs an RPK through the app importer, reusing the transfer and completion flow', async () => {
+  const data = await appFixture()
+  const device = phone(data)
+  try {
+    const result = await deployNotify(parseArgs(['--app', data.project]), { ...data, ...device, env: {}, log() {} })
+    assert.equal(result.installed, true)
+    assert.deepEqual(device.calls.slice(0, 2).map(call => call.args), [['run', 'test', '--if-present'], ['run', 'build']])
+    assert.equal(device.calls[0].options.cwd, data.project)
+    assert.equal(device.calls.find(call => call.command === 'unzip').args[1], data.artifact)
+    const query = device.calls.find(call => call.args.at(-1).includes("'query-activities'"))
+    assert.match(query.args.at(-1), /content:\/\/media\/external_primary\/downloads\/[^']+\.rpk'/)
+    const launch = device.calls.find(call => call.args.at(-1).includes("'am' 'start'"))
+    assert.ok(launch.args.at(-1).includes(`'-n' '${appImporter}'`))
+    assert.match(result.remote, /^\/sdcard\/Download\/XiaomiApps\/de.halle.gebetszeiten-0.2.0-.*\.rpk$/)
+    assert.deepEqual(device.calls.find(call => call.args[3] === '-T').options.input, data.binary)
+    assert.equal(device.calls.filter(call => call.args.at(-1).includes("'input' 'tap'")).length, 1)
+  } finally { await rm(data.root, { recursive: true, force: true }) }
+})
+
+test('rejects mismatched RPK identity/version, missing app/signature, and non-RPK files before ADB', async () => {
+  const data = await appFixture()
+  try {
+    for (const change of [
+      { packaged: { ...data.packaged, package: 'another.app' } },
+      { packaged: { ...data.packaged, versionCode: 1 } },
+      { packaged: { ...data.packaged, versionName: '0.1.0' } },
+      { entries: 'manifest.json\napp.js\n' }, { entries: 'manifest.json\nMETA-INF/CERT\n' }
+    ]) {
+      const device = phone({ ...data, ...change })
+      await assert.rejects(deployNotify(parseArgs(['--app', data.project, '--no-build']), {
+        ...data, ...device, env: {}, log() {}
+      }), /stimmt nicht|fehlt/)
+      assert.ok(device.calls.every(call => call.command === 'unzip'))
+    }
+    await writeFile(data.artifact, Buffer.from('not an RPK'))
+    await assert.rejects(deployNotify(parseArgs(['--app', data.project, '--no-build']), {
+      ...data, run() { assert.fail('No command expected') }, env: {}, log() {}
+    }), /kein RPK/)
+  } finally { await rm(data.root, { recursive: true, force: true }) }
+})
+
+test('never falls back from the app importer to the watchface importer', async () => {
+  const data = await appFixture()
+  const device = phone({ ...data, handlers: 'com.mc.xiaomi1/.ui.watchfaces.WatchfaceUploadActivity\n' })
+  try {
+    await assert.rejects(deployNotify(parseArgs(['--app', data.project, '--no-build']), {
+      ...data, ...device, env: {}, log() {}
+    }), /keinen erkannten App-Dateiimport/)
+    assert.ok(!device.calls.some(call => call.args.at(-1).includes("'content' 'insert'")))
+  } finally { await rm(data.root, { recursive: true, force: true }) }
 })

@@ -15,7 +15,8 @@ function decode(value) {
   })
 }
 
-export function inspectNotifyUI(xml) {
+export function inspectNotifyUI(xml, kind = 'watchface') {
+  if (!['watchface', 'app'].includes(kind)) throw new Error('Unbekannter Pakettyp.')
   if (!/<hierarchy(?:\s|>)/.test(xml) || !xml.trim().endsWith('</hierarchy>')) throw new Error('Unvollständiger UI-Dump.')
   const nodes = [...xml.matchAll(/<node\b([^>]*?)\/?\s*>/g)].map(match =>
     Object.fromEntries([...match[1].matchAll(/([\w:-]+)="([^"]*)"/g)].map(attr => [attr[1], decode(attr[2])])))
@@ -31,8 +32,10 @@ export function inspectNotifyUI(xml) {
   const bounds = button?.bounds?.match(/^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$/)?.slice(1).map(Number)
   const validBounds = bounds && bounds[2] > bounds[0] && bounds[3] > bounds[1]
   const validWatchface = /^(valid watchface|gültiges zifferblatt|gültiges watchface|gueltiges zifferblatt)$/.test(statusText)
-  const ready = validWatchface && byId('imageViewPreview').length === 1 &&
-    byId('containerWatchfaceSettings').length === 1 && button?.enabled === 'true' &&
+  const validApp = /^(valid app file|gültige app-datei|gültige app datei|gueltige app-datei)$/.test(statusText)
+  const validPackage = kind === 'app' ? validApp : validWatchface &&
+    byId('imageViewPreview').length === 1 && byId('containerWatchfaceSettings').length === 1
+  const ready = validPackage && button?.enabled === 'true' &&
     button?.clickable === 'true' && ['install', 'installieren'].includes(normalize(button.text || '')) && validBounds
   const progressText = byId('textViewProgress')[0]?.text || ''
   const percent = progressText.match(/^(\d{1,3})\s*%$/)
@@ -52,26 +55,26 @@ export function isImporterForeground(output, expected) {
   })
 }
 
-export async function installNotify({ readUI, foreground, tap, component, log = console.log,
+export async function installNotify({ readUI, foreground, tap, component, kind = 'watchface', log = console.log,
   wait = ms => new Promise(resolve => setTimeout(resolve, ms)), now = Date.now,
   readyTimeoutMs = 25000, timeoutMs = 180000 }) {
   let state
   const readyDeadline = now() + readyTimeoutMs
   while (now() < readyDeadline) {
-    try { state = inspectNotifyUI(readUI()) } catch { state = undefined }
-    if (state?.failed) throw new Error(`Notify lehnt das Watchface ab: ${state.status}`)
+    try { state = inspectNotifyUI(readUI(), kind) } catch { state = undefined }
+    if (state?.failed) throw new Error(`Notify lehnt das Paket ab: ${state.status}`)
     if (state?.completed) throw new Error('Notify zeigt bereits einen früheren Abschluss. Der neue Import wurde nicht eindeutig geladen; kein Install-Klick ausgeführt.')
     if (state?.ready) break
     await wait(1000)
   }
   if (!state?.ready) throw new Error('Kein eindeutiger aktiver Install-Button gefunden. Handy entsperren und Notify prüfen. Es wurde nichts angeklickt.')
-  if (!isImporterForeground(foreground(), component)) throw new Error('Der Notify-Watchface-Import ist nicht im Vordergrund. Es wurde nichts angeklickt.')
+  if (!isImporterForeground(foreground(), component)) throw new Error('Der Notify-Dateiimport ist nicht im Vordergrund. Es wurde nichts angeklickt.')
   tap(state.button.x, state.button.y)
   log('Install automatisch gedrückt. Warte auf den Abschluss in Notify …')
   const deadline = now() + timeoutMs
   let lastProgress
   while (now() < deadline) {
-    try { state = inspectNotifyUI(readUI()) } catch { state = undefined }
+    try { state = inspectNotifyUI(readUI(), kind) } catch { state = undefined }
     if (state?.failed) throw new Error(`Notify meldet einen Installationsfehler: ${state.status}`)
     if (state?.completed) return { installed: true, status: state.status }
     if (state?.progress !== undefined && state.progress !== lastProgress) {

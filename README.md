@@ -24,7 +24,7 @@ See the [multi-screen adaptation guide](https://iot.mi.com/vela/quickapp/en/guid
 - **[`examples/prayer-times/`](examples/prayer-times/README.md)** - Prayer times and next-prayer countdown for Smart Band 10, with an offline MAWAQIT calendar for Halle (Saale)
 - **[`watchfaces/next-prayer/`](watchfaces/next-prayer/README.md)** - Lua watchface for Smart Band 10 with live Adhan, Iqama, and sunrise countdowns from an offline Halle (Saale) calendar; the earlier static toolkit feasibility demo remains available
 - **[`watchfaces/prayer-daily/`](watchfaces/prayer-daily/README.md)** - Separate watchface with time, date, event-specific prayer countdown, weather, battery, steps, and heart rate; its own package ID preserves the original Next Prayer face
-- **[`scripts/deploy-notify.sh`](scripts/deploy-notify.sh)** - Build, validate, transfer and install either watchface with Notify for Xiaomi over ADB; see the [Notify deployment guide](docs/deployment-notify.md)
+- **[`scripts/deploy-notify.sh`](scripts/deploy-notify.sh)** - Build, validate, transfer and install watchfaces or Vela band apps with Notify for Xiaomi over ADB; see the [Notify deployment guide](docs/deployment-notify.md)
 - **`docs/`** - Detailed documentation on the framework and deployment process
 
 ## Quick Start
@@ -52,6 +52,15 @@ node scripts/emulator-grpc.js screenshot /tmp/screen.png
 ```
 
 ### Deploy to real band
+
+With Notify for Xiaomi connected to the band and an unlocked Android phone reachable over ADB:
+
+```bash
+./scripts/deploy-notify.sh --watchface daily
+./scripts/deploy-notify.sh --app examples/prayer-times
+```
+
+Both commands build, validate, transfer and install automatically. See the [Notify deployment guide](docs/deployment-notify.md). The older Mi Fitness deployment path is also available:
 
 ```bash
 # Phone must be connected via ADB (USB or wireless)
@@ -228,6 +237,7 @@ See [docs/deployment-real-device.md](docs/deployment-real-device.md) for the ful
 | Script | Purpose |
 |--------|---------|
 | `scripts/deploy.sh` | Build + deploy to real band via phone |
+| `scripts/deploy-notify.sh` | Build + automatically install watchfaces or band apps via Notify |
 | `scripts/emu-deploy.sh` | Build + deploy to emulator |
 | `scripts/emulator-grpc.js` | Emulator control (screenshot, click, swipe) |
 

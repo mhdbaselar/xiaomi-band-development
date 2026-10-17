@@ -14,14 +14,15 @@ const variants = {
   original: { directory: 'next-prayer', artifact: 'next-prayer-lua.face', id: '122880004', name: 'Halle Next Prayer 3' }
 }
 
-export const help = `Watchface bauen, per ADB übertragen und mit Notify installieren.
+export const help = `Watchface oder Band-App bauen, per ADB übertragen und mit Notify installieren.
 
 Aufruf:
   ./scripts/deploy-notify.sh [Optionen]
-  npm run deploy:notify -- [Optionen]  (im jeweiligen Watchface-Projekt)
+  npm run deploy:notify -- [Optionen]  (im jeweiligen Projekt)
 
 Optionen:
   --watchface daily|original  Watchface auswählen (Standard: daily)
+  --app PROJEKT              Vela-App-Projekt installieren, z. B. examples/prayer-times
   --serial SERIAL            Android-Handy auswählen; sonst genau ein erreichbares Handy
   --no-build                 Vorhandenes Paket verwenden
   --no-install               Nur die Vorschau öffnen, Install nicht automatisch drücken
@@ -38,13 +39,13 @@ Install wird einmal automatisch gedrückt; das Skript wartet auf Notify-Abschlus
 `
 
 export function parseArgs(argv) {
-  const options = { watchface: 'daily', build: true, install: true, pushOnly: false, dryRun: false }
+  const options = { build: true, install: true, pushOnly: false, dryRun: false }
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index]
-    if (arg === '--watchface' || arg === '--serial') {
+    if (['--watchface', '--app', '--serial'].includes(arg)) {
       const value = argv[++index]
       if (!value || value.startsWith('--')) throw new Error(`Wert für ${arg} fehlt.`)
-      options[arg === '--watchface' ? 'watchface' : 'serial'] = value
+      options[arg.slice(2)] = value
     } else if (arg === '--no-build') options.build = false
     else if (arg === '--no-install') options.install = false
     else if (arg === '--push-only') options.pushOnly = true
@@ -52,8 +53,60 @@ export function parseArgs(argv) {
     else if (arg === '--help' || arg === '-h') options.help = true
     else throw new Error(`Unbekannte Option: ${arg}. Siehe --help.`)
   }
-  if (!variants[options.watchface]) throw new Error('--watchface muss daily oder original sein.')
+  if (options.app && options.watchface) throw new Error('--app und --watchface können nicht zusammen verwendet werden.')
+  if (!options.app) options.watchface ??= 'daily'
+  if (options.watchface && !variants[options.watchface]) throw new Error('--watchface muss daily oder original sein.')
   return options
+}
+
+async function resolveTarget(options, root) {
+  if (options.app) {
+    const project = path.resolve(options.app)
+    let manifest
+    try { manifest = JSON.parse(await readFile(path.join(project, 'src/manifest.json'), 'utf8')) }
+    catch { throw new Error(`Kein lesbares App-Manifest: ${path.join(project, 'src/manifest.json')}`) }
+    if (!/^[a-zA-Z]\w*(?:\.[a-zA-Z]\w*)+$/.test(manifest?.package) ||
+        typeof manifest.versionName !== 'string' || !/^[\w.+-]+$/.test(manifest.versionName) ||
+        !Number.isInteger(manifest.versionCode) || manifest.versionCode < 1) {
+      throw new Error('Das App-Manifest braucht einen gültigen Paketnamen, versionName und einen positiven versionCode.')
+    }
+    return {
+      kind: 'app', project, manifest, id: manifest.package,
+      name: `${manifest.name || manifest.package} ${manifest.versionName}`,
+      artifact: path.join(project, 'dist', `${manifest.package}.debug.${manifest.versionName}.rpk`),
+      prefix: `${manifest.package}-${manifest.versionName}`, extension: 'rpk',
+      relativePath: 'Download/XiaomiApps/', activity: 'UpdateFirmwareActivity'
+    }
+  }
+  const variant = variants[options.watchface]
+  if (!variant) throw new Error('Unbekanntes Watchface.')
+  const project = path.join(root, 'watchfaces', variant.directory)
+  return {
+    ...variant, kind: 'watchface', project, artifact: path.join(project, 'dist', variant.artifact),
+    prefix: `${variant.directory}-${variant.id}`, extension: 'face',
+    relativePath: 'Download/XiaomiWatchfaces/', activity: 'WatchfaceUploadActivity'
+  }
+}
+
+function validatePackage(binary, target, run) {
+  if (target.kind === 'app') {
+    if (binary.subarray(0, 4).toString('hex') !== '504b0304') throw new Error('Die Datei ist kein RPK-Archiv.')
+    let packaged
+    try { packaged = JSON.parse(run('unzip', ['-p', target.artifact, 'manifest.json'])) }
+    catch (error) { throw new Error(`RPK-Manifest konnte nicht gelesen werden: ${error.message}`) }
+    if (packaged?.package !== target.id || packaged.versionCode !== target.manifest.versionCode ||
+        packaged.versionName !== target.manifest.versionName) {
+      throw new Error('Paketname oder Version der RPK stimmt nicht mit src/manifest.json überein. Bitte neu bauen.')
+    }
+    const entries = new Set(run('unzip', ['-Z1', target.artifact]).trim().split(/\r?\n/))
+    if (!entries.has('app.js') || !entries.has('META-INF/CERT')) throw new Error('RPK-App-Einstiegspunkt oder Signatur fehlt.')
+    return
+  }
+  if (binary.length < 0x100 || binary.subarray(0, 4).toString('hex') !== '5aa53412') {
+    throw new Error('Die Datei ist kein gültiges Lua-Watchface-Paket.')
+  }
+  if (binary.toString('ascii', 0x28, 0x31) !== target.id) throw new Error(`Falsche Paket-ID. Erwartet wird ${target.id}.`)
+  if (!readLuaFiles(binary).some(file => file.name === 'lua/main.lua')) throw new Error('Lua-Einstiegspunkt fehlt.')
 }
 
 export function selectDevice(output, serial) {
@@ -80,49 +133,43 @@ function runCommand(command, args, options = {}) {
     return execFileSync(command, args, {
       cwd: options.cwd, encoding: options.encoding === null ? null : 'utf8', timeout: options.timeout || 30000,
       input: options.input,
-      maxBuffer: 4 * 1024 * 1024,
+      maxBuffer: options.maxBuffer || 4 * 1024 * 1024,
       stdio: options.inherit ? 'inherit' : [options.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe']
     }) || ''
   } catch (error) {
-    if (error.code === 'ENOENT') throw new Error(`${command} wurde nicht gefunden. Node.js/npm und Android Platform Tools (adb) müssen installiert sein.`)
+    if (error.code === 'ENOENT') throw new Error(`${command} wurde nicht gefunden. Benötigt werden Node.js/npm, adb und für Band-Apps unzip.`)
     const details = String(error.stderr || error.stdout || error.message).trim().slice(0, 1600)
     throw new Error(`${command} fehlgeschlagen: ${details}`)
   }
 }
 
 export async function deployNotify(options, { root = repositoryRoot, run = runCommand, log = console.log, env = process.env } = {}) {
-  const variant = variants[options.watchface]
-  if (!variant) throw new Error('Unbekanntes Watchface.')
-  const project = path.join(root, 'watchfaces', variant.directory)
-  const artifact = path.join(project, 'dist', variant.artifact)
+  const target = await resolveTarget(options, root)
+  const { project, artifact, relativePath } = target
   if (options.dryRun) {
-    log(`Watchface: ${variant.name} (ID ${variant.id})`)
-    log(`Build: ${options.build ? `npm run package in ${project}` : 'übersprungen'}`)
+    log(`${target.kind === 'app' ? 'Band-App' : 'Watchface'}: ${target.name} (ID ${target.id})`)
+    log(`Build: ${options.build ? `${target.kind === 'app' ? 'npm run test --if-present + npm run build' : 'npm run package'} in ${project}` : 'übersprungen'}`)
     log(`Paket: ${artifact}`)
-    log(`Ziel: Download/XiaomiWatchfaces/${variant.directory}-${variant.id}-<sha256>-<run>.face`)
+    log(`Ziel: ${relativePath}${target.prefix}-<sha256>-<run>.${target.extension}`)
     log(options.pushOnly ? 'Danach: nur Dateiübertragung.' : options.install ?
       'Danach: Notify öffnen, Install automatisch drücken und auf Abschluss warten.' : 'Danach: nur Notify-Vorschau öffnen.')
     return { dryRun: true }
   }
 
   if (options.build) {
-    log(`Baue und prüfe ${variant.name} …`)
-    run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'package'], { cwd: project, inherit: true, timeout: 120000 })
+    log(`Baue und prüfe ${target.name} …`)
+    const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+    const settings = { cwd: project, inherit: true, timeout: 120000 }
+    if (target.kind === 'app') run(npm, ['run', 'test', '--if-present'], settings)
+    run(npm, ['run', target.kind === 'app' ? 'build' : 'package'], settings)
   }
   let binary
   try { binary = await readFile(artifact) }
   catch { throw new Error(`Paket fehlt: ${artifact}. Ohne --no-build erneut aufrufen.`) }
-  if (binary.length < 0x100 || binary.subarray(0, 4).toString('hex') !== '5aa53412') {
-    throw new Error('Die Datei ist kein gültiges Lua-Watchface-Paket.')
-  }
-  if (binary.toString('ascii', 0x28, 0x31) !== variant.id) {
-    throw new Error(`Falsche Paket-ID. Für ${options.watchface} wird ${variant.id} erwartet.`)
-  }
-  const files = readLuaFiles(binary)
-  if (!files.some(file => file.name === 'lua/main.lua')) throw new Error('Lua-Einstiegspunkt fehlt.')
+  validatePackage(binary, target, run)
   const sha256 = createHash('sha256').update(binary).digest('hex')
-  const filename = `${variant.directory}-${variant.id}-${sha256.slice(0, 12)}-${randomUUID().slice(0, 8)}.face`
-  const remote = `/sdcard/Download/XiaomiWatchfaces/${filename}`
+  const filename = `${target.prefix}-${sha256.slice(0, 12)}-${randomUUID().slice(0, 8)}.${target.extension}`
+  const remote = `/sdcard/${relativePath}${filename}`
   const downloads = 'content://media/external_primary/downloads'
   const adb = env.ADB || 'adb'
   const serial = selectDevice(run(adb, ['devices', '-l']), options.serial || env.PHONE_SERIAL || env.ANDROID_SERIAL)
@@ -132,7 +179,7 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
   const shell = args => command(['shell', args.map(shellQuote).join(' ')])
   log(`Handy: ${serial}`)
   if (options.pushOnly) {
-    shell(['mkdir', '-p', '/sdcard/Download/XiaomiWatchfaces'])
+    shell(['mkdir', '-p', `/sdcard/${relativePath}`])
     command(['push', artifact, remote])
     const transferred = shell(['sha256sum', remote]).trim().split(/\s/)[0]
     if (transferred.toLowerCase() !== sha256) throw new Error('Die übertragene Datei stimmt nicht mit dem lokalen Paket überein.')
@@ -144,25 +191,27 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
   const installed = shell(['pm', 'path', '--user', user, notifyPackage])
   if (!/^package:/m.test(installed)) throw new Error('Notify for Xiaomi (com.mc.xiaomi1) ist im aktuellen Android-Profil nicht installiert.')
   const handlers = shell(['cmd', 'package', 'query-activities', '--brief', '--user', user,
-    '-a', 'android.intent.action.VIEW', '-d', downloads, '-t', 'application/octet-stream', '-p', notifyPackage])
+    // Notify's app intent filter requires an .rpk path; a bare Downloads URI
+    // only resolves its generic watchface importer. No file is opened here.
+    '-a', 'android.intent.action.VIEW', '-d', `${downloads}/${filename}`, '-t', 'application/octet-stream', '-p', notifyPackage])
   const component = handlers.split(/\r?\n/).map(line => line.trim()).find(line =>
-    /^com\.mc\.xiaomi1\/[A-Za-z0-9._$]*WatchfaceUploadActivity$/.test(line))
-  if (!component) throw new Error('Diese Notify-Version bietet keinen erkannten Watchface-Dateiimport. Mit --push-only übertragen und in Notify manuell importieren.')
+    /^com\.mc\.xiaomi1\/[A-Za-z0-9._$]+$/.test(line) && line.endsWith(`.${target.activity}`))
+  if (!component) throw new Error(`Diese Notify-Version bietet keinen erkannten ${target.kind === 'app' ? 'App' : 'Watchface'}-Dateiimport. Mit --push-only übertragen und in Notify manuell importieren.`)
   // Create an owned MediaStore download and write through its content URI.
   // ADB cannot grant another provider's Documents URI. This owned URI can be
   // shared with Notify without MANAGE_EXTERNAL_STORAGE or a helper APK.
   shell(['content', 'insert', '--uri', downloads, '--user', user,
     '--bind', `_display_name:s:${filename}`, '--bind', 'mime_type:s:application/octet-stream',
-    '--bind', 'relative_path:s:Download/XiaomiWatchfaces/'])
+    '--bind', `relative_path:s:${relativePath}`])
   const row = shell(['content', 'query', '--uri', downloads, '--user', user, '--projection', '_id',
-    '--where', `_display_name='${filename}' AND relative_path='Download/XiaomiWatchfaces/'`])
+    '--where', `_display_name='${filename}' AND relative_path='${relativePath}'`])
   const ids = [...row.matchAll(/\b_id=(\d+)/g)].map(match => match[1])
   if (ids.length !== 1) throw new Error('Android konnte keine eindeutige Download-Datei anlegen. Mit --push-only übertragen und manuell in Notify importieren.')
   const uri = `${downloads}/${ids[0]}`
   const write = ['content', 'write', '--uri', uri, '--user', user].map(shellQuote).join(' ')
   command(['shell', '-T', write], { input: binary, timeout: 60000 })
   const read = ['content', 'read', '--uri', uri, '--user', user].map(shellQuote).join(' ')
-  const transferred = command(['exec-out', read], { encoding: null, timeout: 60000 })
+  const transferred = command(['exec-out', read], { encoding: null, timeout: 60000, maxBuffer: binary.length + 65536 })
   if (createHash('sha256').update(transferred).digest('hex') !== sha256) {
     throw new Error('Die übertragene Datei stimmt nicht mit dem lokalen Paket überein. Notify wurde nicht geöffnet.')
   }
@@ -179,14 +228,14 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
     throw new Error(`Die Datei liegt unter ${remote}, aber Notify konnte sie nicht öffnen. Bitte dort manuell importieren.\n${result.trim()}`)
   }
   if (!options.install) {
-    log(`Notify-Import für ${variant.name} geöffnet. Die Installation auf dem Band jetzt auf dem Handy bestätigen.`)
+    log(`Notify-Import für ${target.name} geöffnet. Die Installation auf dem Band jetzt auf dem Handy bestätigen.`)
     return { serial, remote, uri, sha256, opened: true, installed: false }
   }
   const uiPath = `/data/local/tmp/notify-deploy-${randomUUID()}.xml`
   let installation
   try {
     installation = await installNotify({
-      component, log,
+      component, kind: target.kind, log,
       readUI: () => {
         const dumped = shell(['uiautomator', 'dump', uiPath])
         if (!/dumped to:/.test(dumped)) throw new Error('Android konnte keinen frischen UI-Dump erstellen.')
@@ -208,7 +257,7 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
       await writeFile(screenshot, png)
     }
   } catch { /* A screenshot failure must not change a confirmed installation result. */ }
-  log(`Notify bestätigt die Installation von ${variant.name}: ${installation.status}`)
+  log(`Notify bestätigt die Installation von ${target.name}: ${installation.status}`)
   return { serial, remote, uri, sha256, opened: true, installed: true, screenshot }
 }
 

@@ -7,6 +7,7 @@
   "scripts": {
     "start": "aiot start --watch",
     "build": "aiot build",
+    "deploy:notify": "node ../../scripts/deploy-notify.mjs --app .",
     "release": "aiot release",
     "test": "node --test tests/*.test.mjs",
     "update-times": "node tools/import-mawaqit.mjs"

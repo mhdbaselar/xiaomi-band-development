@@ -46,18 +46,17 @@ Die Tests prüfen Countdown-Grenzen, Gebetsbeginn, Sonnenaufgang, Tageswechsel, 
 
 ## Auf Android und Band installieren
 
-Das Band muss in **Mi Fitness** mit dem Android-Telefon gekoppelt sein. Telefon per USB verbinden, USB-Debugging aktivieren und den Rechner auf dem Telefon zulassen. ADB, JDK und Android SDK mit Platform- und Build-Tools werden vom vorhandenen Installationsskript benötigt.
+Mit **Notify for Xiaomi** und einem per ADB verbundenen, entsperrten Android-Handy:
 
 Im Wurzelverzeichnis dieses Repositorys:
 
 ```sh
-adb devices
-./scripts/deploy.sh --project examples/prayer-times
+./scripts/deploy-notify.sh --app examples/prayer-times
 ```
 
-Das vorhandene Skript öffnet eine interne Installationsansicht in Mi Fitness. Im Dateidialog die RPK-Datei auswählen. Dieser Weg stammt aus dem Band-8-Pro-Beispiel und ist **noch nicht mit deinem Band 10 und deiner Mi-Fitness-Version getestet**. Details und Fehlerbehebung: [Geräteinstallation](../../docs/deployment-real-device.md).
+Oder direkt in diesem App-Verzeichnis: `npm run deploy:notify`. Das Skript testet und baut die App, prüft Paketname und Version, überträgt die RPK und drückt nach Notify-Erkennung als **„Valid app file“** automatisch **Install**. Es wartet anschließend auf **„Update completed“**. Mit `--no-build` wird das bestehende Paket verwendet; mit `--no-install` bleibt der Klick manuell. Alle Optionen: [Notify-Installation](../../docs/deployment-notify.md).
 
-Bei einem Update `versionCode` und `versionName` in `src/manifest.json` erhöhen und neu bauen. Falls Mi Fitness die alte Version behält, siehe die Hinweise zur Neuinstallation in der bestehenden Anleitung.
+Bei einem Update `versionCode` und `versionName` in `src/manifest.json` erhöhen. Der ältere Installationsweg über die interne Mi-Fitness-Ansicht bleibt separat in [Geräteinstallation](../../docs/deployment-real-device.md) dokumentiert; er wurde mit deinem Band 10 nicht getestet.
 
 ## Zeiten aktualisieren
 
