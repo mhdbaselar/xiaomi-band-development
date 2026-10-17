@@ -22,7 +22,7 @@ const settings = JSON.parse(await readFile(path.join(root, 'settings.json')))
 assert.ok(Number.isInteger(settings.iqamaFallbackMinutes) && settings.iqamaFallbackMinutes >= 1 && settings.iqamaFallbackMinutes <= 180)
 const fallbackSeconds = settings.iqamaFallbackMinutes * 60
 assert.equal(calendar.timezone, 'Europe/Berlin')
-assert.ok(calendar.days.length > 1 && calendar.days.length <= 31)
+assert.ok(calendar.days.length > 0)
 const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
 const berlinClock = new Intl.DateTimeFormat('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 const quote = value => '"' + String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n').replaceAll('\r', '\\r') + '"'

@@ -13,7 +13,7 @@ Erste Vela-JS-App für das **Islamische Kulturcenter Halle (Saale), Am Meeresbru
 - Aktualisierung nur bei sichtbarer Seite. Beim Wiederöffnen wird die Restzeit aus der aktuellen Uhrzeit neu berechnet.
 - Bei fehlenden oder abgelaufenen Daten erscheint „Kalender erneuern“. Es werden keine Zeiten geschätzt oder über das Jahresende wiederholt.
 
-**Mitgelieferter Datenstand:** 16. Oktober 2026, Kalender vom 16. Oktober bis 14. November 2026. Nach dem letzten Isha fehlt der folgende Fajr: vorher aktualisieren. Nachträgliche Änderungen der Moschee werden erst durch einen neuen Import übernommen.
+**Mitgelieferter Datenstand:** 17. Oktober 2026, Kalender vom 17. Oktober bis 31. Dezember 2026. Nach dem letzten Isha fehlt der folgende Fajr: vorher aktualisieren. Nachträgliche Änderungen der Moschee werden erst durch einen neuen Import übernommen.
 
 Der Countdown bezieht sich auf **Adhan**, nicht auf Iqama. Die beiden Freitagsgebete stehen separat in der Infoansicht; sie ersetzen Dhuhr im Countdown nicht. Keine Hintergrundalarme, Vibrationen oder automatische Synchronisierung mit Android in dieser Version.
 
@@ -28,7 +28,7 @@ npm test
 npm run build
 ```
 
-Ausgabe: `dist/de.halle.gebetszeiten.debug.0.2.0.rpk`.
+Ausgabe: `dist/de.halle.gebetszeiten.debug.0.2.1.rpk`.
 
 ## Experimentelle Seitenkachel mit Notify
 
@@ -67,7 +67,7 @@ npm test
 npm run build
 ```
 
-Anschließend die neue App-Version installieren. Der Import holt einmalig die [öffentliche MAWAQIT-Anzeigeseite der Moschee (ID 12288)](https://mawaqit.net/de/msjd-hlh-zlh-halle-saale-06122-germany) und liest das dort eingebettete JSON. Standardmäßig werden 30 Tage übernommen, maximal 31 und niemals über das Kalenderjahresende hinaus. Die Tageszeiten müssen mit der Tagesanzeige der geladenen Seite übereinstimmen, sonst bricht der Import ab und behält die vorhandene Datei.
+Anschließend die neue App-Version installieren. Der Import holt einmalig die [öffentliche MAWAQIT-Anzeigeseite der Moschee (ID 12288)](https://mawaqit.net/de/msjd-hlh-zlh-halle-saale-06122-germany) und liest das dort eingebettete JSON. Er übernimmt alle zusammenhängend vorhandenen Kalendertage ab dem Abrufdatum, ohne ein festes Tageslimit. Da die Quelldaten keine Jahreszahl tragen, endet der Import spätestens am 31. Dezember des Abrufjahres. Bei einer Lücke oder einer Abweichung zur Tagesanzeige bricht er ab und behält die vorhandene Datei.
 
 Das ist **keine offizielle API-Anbindung**. Das Seitenformat kann sich ändern. Die MAWAQIT-API ist laut [MAWAQIT-Hilfe](https://help.mawaqit.net/en/articles/11991838-can-i-use-your-api) privat. Für eine langfristige automatische Versorgung sollte eine abgestimmte Datenquelle der Moschee bzw. von MAWAQIT verwendet werden.
 

@@ -26,17 +26,22 @@ test('sunrise is excluded from next-prayer selection', () => {
 
 test('after Isha uses tomorrow’s actual Fajr; midnight changes the day', () => {
   const state = getPrayerState(calendar, today.prayers[4].at + 60000)
-  assert.equal(state.tomorrow, true)
-  assert.equal(state.next.at, tomorrow.prayers[0].at)
   assert.equal(getPrayerState(calendar, today.end - 1).day.date, today.date)
-  assert.equal(getPrayerState(calendar, today.end).day.date, tomorrow.date)
+  if (tomorrow) {
+    assert.equal(state.tomorrow, true)
+    assert.equal(state.next.at, tomorrow.prayers[0].at)
+    assert.equal(getPrayerState(calendar, today.end).day.date, tomorrow.date)
+  } else {
+    assert.equal(state.status, 'missing-next-day')
+    assert.equal(getPrayerState(calendar, today.end).status, 'unavailable')
+  }
 })
 
 test('reopening after sleep or a clock change recomputes from wall-clock time', () => {
   getPrayerState(calendar, today.start)
   assert.equal(getPrayerState(calendar, today.prayers[3].at - 1000).next.id, 'maghrib')
   assert.equal(getPrayerState(calendar, today.prayers[1].at - 1000).next.id, 'dhuhr')
-  assert.equal(getPrayerState(calendar, tomorrow.start).day.date, tomorrow.date)
+  if (tomorrow) assert.equal(getPrayerState(calendar, tomorrow.start).day.date, tomorrow.date)
 })
 
 test('missing and expired days never produce invented prayer times', () => {
@@ -45,7 +50,7 @@ test('missing and expired days never produce invented prayer times', () => {
   assert.equal(getPrayerState(limited, today.end).status, 'unavailable')
   assert.equal(getPrayerState(limited, today.start - 1).next, null)
   assert.equal(getPrayerState({ days: [] }, today.start).countdown, '--:--:--')
-  assert.equal(getPrayerState({ days: [today, calendar.days[2]] }, today.prayers[4].at + 60000).next, null)
+  assert.equal(getPrayerState({ days: [today, { ...today, start: today.end + 86400000 }] }, today.prayers[4].at + 60000).next, null)
 })
 
 test('countdown rounds up, has no negative values, and supports over 24 hours', () => {
@@ -79,9 +84,10 @@ function fixture() {
 
 test('importer validates calendar data and daily display agreement', () => {
   const config = fixture()
-  const options = { fetchedAt: '2026-10-16T12:00:00Z', count: 2 }
+  const options = { fetchedAt: '2026-10-16T12:00:00Z' }
   const compiled = compileCalendar(config, options)
-  assert.equal(compiled.days.length, 2)
+  assert.equal(compiled.days.length, 77)
+  assert.equal(compiled.days.at(-1).date, '2026-12-31')
   assert.equal(compiled.days[0].prayers.length, 5)
   assert.equal(compiled.days[0].prayers[1].time, '12:58')
   config.calendar[9]['17'][0] = 'bad'
@@ -93,14 +99,26 @@ test('importer validates calendar data and daily display agreement', () => {
   unordered.calendar[9]['17'][2] = '05:00'
   assert.throws(() => compileCalendar(unordered, options), /chronologisch/)
   assert.throws(() => compileCalendar({ ...fixture(), jumuaAsDuhr: true }, options), /Anpassungen/)
-  assert.throws(() => compileCalendar(fixture(), { ...options, count: 500 }), /31 Tage/)
+})
+
+test('importer uses every consecutive published day and rejects gaps', () => {
+  const config = fixture()
+  config.calendar[9] = Object.fromEntries(['16', '17', '18'].map(day => [day, config.calendar[9][day]]))
+  config.calendar[10] = {}
+  config.calendar[11] = {}
+  const options = { fetchedAt: '2026-10-16T12:00:00Z' }
+  assert.deepEqual(compileCalendar(config, options).days.map(day => day.date), [
+    '2026-10-16', '2026-10-17', '2026-10-18'
+  ])
+  delete config.calendar[9]['17']
+  assert.throws(() => compileCalendar(config, options), /Fehlende Gebetszeiten: 2026-10-17/)
 })
 
 test('importer keeps published Iqama times and offsets without inventing missing ones', () => {
   const config = fixture()
   config.iqamaCalendar = Array.from({ length: 12 }, () => ({}))
   config.iqamaCalendar[9]['16'] = ['+10', '13:15', null, '+5', '+10']
-  const options = { fetchedAt: '2026-10-16T12:00:00Z', count: 2 }
+  const options = { fetchedAt: '2026-10-16T12:00:00Z' }
   const compiled = compileCalendar(config, options)
   const prayers = compiled.days[0].prayers
   assert.equal(prayers[0].iqamaAt, prayers[0].at + 600000)
@@ -115,7 +133,7 @@ test('importer keeps published Iqama times and offsets without inventing missing
 })
 
 test('calendar stops at year boundary instead of inventing next year’s times', () => {
-  const compiled = compileCalendar(fixture(), { fetchedAt: '2026-12-31T12:00:00Z', count: 30 })
+  const compiled = compileCalendar(fixture(), { fetchedAt: '2026-12-31T12:00:00Z' })
   assert.equal(compiled.days.length, 1)
   assert.equal(compiled.days[0].date, '2026-12-31')
 })

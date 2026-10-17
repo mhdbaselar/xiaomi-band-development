@@ -7,10 +7,10 @@ async function main() {
   const args = process.argv.slice(2)
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--help') {
-      console.log('npm run update-times -- [--days 30] [--file /path/mawaqit.html --fetched-at ISO_TIMESTAMP]')
+      console.log('npm run update-times -- [--file /path/mawaqit.html --fetched-at ISO_TIMESTAMP]')
       return
     }
-    if (!['--days', '--file', '--fetched-at'].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--')) {
+    if (!['--file', '--fetched-at'].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith('--')) {
       throw new Error(`Unbekannte oder unvollständige Option: ${args[i]}`)
     }
     options[args[i].slice(2)] = args[++i]
@@ -32,9 +32,7 @@ async function main() {
     fetchedAt = new Date().toISOString()
   }
   if (html.length > 2000000) throw new Error('Unerwartet große Antwort.')
-  const calendar = compileCalendar(extractConfig(html), {
-    fetchedAt, count: options.days === undefined ? 30 : Number(options.days)
-  })
+  const calendar = compileCalendar(extractConfig(html), { fetchedAt })
   const destination = fileURLToPath(new URL('../src/common/calendar.json', import.meta.url))
   const temporary = `${destination}.tmp`
   await writeFile(temporary, JSON.stringify(calendar, null, 2) + '\n')

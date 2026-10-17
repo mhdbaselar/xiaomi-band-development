@@ -91,10 +91,9 @@ export function extractConfig(html) {
   throw new Error('Unvollständige confData.')
 }
 
-export function compileCalendar(config, { fetchedAt, count = 30 }) {
+export function compileCalendar(config, { fetchedAt }) {
   const fetched = Date.parse(fetchedAt)
   if (!Number.isFinite(fetched)) throw new Error('Abrufdatum fehlt oder ist ungültig.')
-  if (!Number.isInteger(count) || count < 2 || count > 31) throw new Error('Es werden 2 bis 31 Tage unterstützt.')
   if (config.timezone !== ZONE) throw new Error('Die Moschee muss die Zeitzone Europe/Berlin verwenden.')
   if (!Array.isArray(config.calendar) || config.calendar.length !== 12) throw new Error('Jahreskalender fehlt.')
   if (config.iqamaCalendar != null && (!Array.isArray(config.iqamaCalendar) || config.iqamaCalendar.length !== 12)) {
@@ -106,10 +105,16 @@ export function compileCalendar(config, { fetchedAt, count = 30 }) {
   const first = berlinDate(fetched)
   const year = first.slice(0, 4)
   const days = []
-  for (let i = 0; i < count; i++) {
-    const date = addDays(first, i)
-    // confData has no year field. Never reuse its calendar in the following year.
-    if (date.slice(0, 4) !== year) break
+  // confData has no year field. Use every published day from the fetch date
+  // through this year, but never attach these times to the following year.
+  let lastAvailable = null
+  for (let date = first; date.slice(0, 4) === year; date = addDays(date, 1)) {
+    const month = Number(date.slice(5, 7)) - 1
+    const day = Number(date.slice(8, 10))
+    if (config.calendar[month]?.[String(day)] != null) lastAvailable = date
+  }
+  if (lastAvailable === null) throw new Error(`Fehlende Gebetszeiten: ${first}`)
+  for (let date = first; date <= lastAvailable; date = addDays(date, 1)) {
     const month = Number(date.slice(5, 7)) - 1
     const day = Number(date.slice(8, 10))
     const times = config.calendar[month]?.[String(day)]
@@ -124,7 +129,7 @@ export function compileCalendar(config, { fetchedAt, count = 30 }) {
       throw new Error(`Ungültige Iqama-Tagesdaten: ${date}`)
     }
     // Detect stale HTML / year mismatch / display overrides for the fetched day.
-    if (i === 0 && (JSON.stringify(prayerTimes) !== JSON.stringify(config.times) || times[1] !== config.shuruq)) {
+    if (date === first && (JSON.stringify(prayerTimes) !== JSON.stringify(config.times) || times[1] !== config.shuruq)) {
       throw new Error('Tagesanzeige und Kalender stimmen nicht überein. Frische Seite abrufen und Abrufdatum prüfen.')
     }
     days.push({

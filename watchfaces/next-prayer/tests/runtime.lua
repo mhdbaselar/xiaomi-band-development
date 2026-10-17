@@ -16,12 +16,15 @@ end
 assert(prayers.countdown(90000) == '25:00:00')
 assert(prayers.countdown(-1) == '00:00:00')
 assert(prayers.state({ days = {} }, 0).status == 'unavailable')
-local gap = { days = { calendar.days[1], calendar.days[3] } }
-assert(prayers.state(gap, calendar.days[1].prayers[5].iqamaAt + 60).status == 'missing-next-day')
+if calendar.days[3] then
+    local gap = { days = { calendar.days[1], calendar.days[3] } }
+    assert(prayers.state(gap, calendar.days[1].prayers[5].iqamaAt + 60).status == 'missing-next-day')
+end
 print(#vectors .. ' Lua/JS boundary comparisons passed (including DST).')
 
 local host = dofile((arg[0]:match('(.*/)') or './') .. 'host.lua')
 local target = calendar.days[1].prayers[2].at
+local targetPrayer = calendar.days[1].prayers[2]
 local app = host.start(directory, target - 120)
 assert(app:text(329) == '00:02:00')
 app:tick(target - 119)
@@ -35,12 +38,13 @@ ScreenStateChangedCB('OFF', 'ON', '')
 assert(app:text(329) == '00:00:50', 'Must recompute immediately on wake')
 app:tick(target)
 assert(app:text(199) == 'NAECHSTE IQAMA')
-assert(app:text(329) == '00:10:00')
-assert(app:text(273) == '13:08')
+assert(app:text(329) == prayers.countdown(targetPrayer.iqamaAt - target))
+assert(app:text(273) == targetPrayer.iqamaTime)
 assert(app:text(377) == 'ADHAN JETZT · BIS IQAMA')
-assert(app:text(426) == 'Iqama: +10 Min. (Standard)')
+assert(app:text(426) == (targetPrayer.iqamaSource == 'mawaqit' and 'Iqama: MAWAQIT' or
+    'Iqama: +' .. calendar.iqamaFallbackMinutes .. ' Min. (Standard)'))
 app:tick(target + 60)
-assert(app:text(329) == '00:09:00')
+assert(app:text(329) == prayers.countdown(targetPrayer.iqamaAt - target - 60))
 app:tick(calendar.days[1].prayers[2].iqamaAt)
 assert(app:text(199) == 'IQAMA JETZT')
 assert(app:text(329) == '00:00:00')
@@ -53,7 +57,7 @@ local fajr = calendar.days[1].prayers[1]
 app:tick(fajr.at - 1)
 assert(app:text(227) == 'Fajr' and app:text(329) == '00:00:01')
 app:tick(fajr.at)
-assert(app:text(329) == '00:10:00')
+assert(app:text(329) == prayers.countdown(fajr.iqamaAt - fajr.at))
 app:tick(fajr.iqamaAt)
 assert(app:text(199) == 'IQAMA JETZT')
 app:tick(fajr.iqamaAt + 60)
@@ -67,8 +71,12 @@ assert(app:text(227) == 'Dhuhr')
 pageOnPause()
 app:tick(calendar.days[1].prayers[5].iqamaAt + 60)
 pageOnResume()
-assert(app:text(227) == 'Fajr')
-assert(app:text(273) == 'Morgen ' .. calendar.days[2].prayers[1].time)
+if calendar.days[2] then
+    assert(app:text(227) == 'Fajr')
+    assert(app:text(273) == 'Morgen ' .. calendar.days[2].prayers[1].time)
+else
+    assert(app:text(273) == 'Kalender erneuern')
+end
 app:tick(calendar.days[#calendar.days].finish)
 assert(app:text(329) == '--:--:--')
 assert(app:text(273) == 'Kalender erneuern')
