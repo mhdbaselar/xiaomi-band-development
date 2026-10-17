@@ -55,19 +55,37 @@ local function render(now)
     local state = prayers.state(calendar, now)
     setText(clock, os.date("%H:%M", now))
     setText(date, os.date("%d.%m.%Y", now))
-    if not state.next then
+    if not state.phase then
         setText(heading, "GEBETSZEITEN")
         setText(name, "Keine Daten")
         setText(target, "Kalender erneuern")
         setText(countdown, "--:--:--")
         setText(status, "HALLE / SAALE")
+        setText(footer, "Kalender bis " .. calendar.validThrough)
         return
     end
-    setText(heading, state.status == "due" and "JETZT IST GEBETSZEIT" or "NAECHSTES GEBET")
-    setText(name, state.next.label)
-    setText(target, (state.tomorrow and "Morgen " or "") .. state.next.time)
+    if state.phase == "sunrise" then
+        setText(heading, "SONNENAUFGANG")
+        setText(name, "Shuruq")
+        setText(status, state.status == "due" and "JETZT" or "BIS ZUM AUFGANG")
+    elseif state.phase == "iqama" then
+        setText(heading, state.status == "due" and "IQAMA JETZT" or "NAECHSTE IQAMA")
+        setText(name, state.next.label)
+        setText(status, state.status == "due" and "GEBET BEGINNT" or
+            state.adhanNow and "ADHAN JETZT · BIS IQAMA" or "BIS ZUR IQAMA")
+    else
+        setText(heading, "NAECHSTER ADHAN")
+        setText(name, state.next.label)
+        setText(status, "BIS ZUM ADHAN")
+    end
+    setText(target, (state.tomorrow and "Morgen " or "") .. state.time)
     setText(countdown, state.countdown)
-    setText(status, state.status == "due" and "ADHAN" or "BIS ZUM ADHAN")
+    if state.phase == "iqama" then
+        setText(footer, state.source == "mawaqit" and "Iqama: MAWAQIT" or
+            "Iqama: +" .. calendar.iqamaFallbackMinutes .. " Min. (Standard)")
+    else
+        setText(footer, "Kalender bis " .. calendar.validThrough)
+    end
 end
 
 local function refresh(force)

@@ -96,6 +96,24 @@ test('importer validates calendar data and daily display agreement', () => {
   assert.throws(() => compileCalendar(fixture(), { ...options, count: 500 }), /31 Tage/)
 })
 
+test('importer keeps published Iqama times and offsets without inventing missing ones', () => {
+  const config = fixture()
+  config.iqamaCalendar = Array.from({ length: 12 }, () => ({}))
+  config.iqamaCalendar[9]['16'] = ['+10', '13:15', null, '+5', '+10']
+  const options = { fetchedAt: '2026-10-16T12:00:00Z', count: 2 }
+  const compiled = compileCalendar(config, options)
+  const prayers = compiled.days[0].prayers
+  assert.equal(prayers[0].iqamaAt, prayers[0].at + 600000)
+  assert.equal(prayers[1].iqamaAt, berlinTimestamp('2026-10-16', '13:15'))
+  assert.equal(prayers[2].iqamaAt, undefined)
+  assert.equal(prayers[3].iqamaAt, prayers[3].at + 300000)
+  assert.equal(compiled.days[1].prayers[0].iqamaAt, undefined)
+  config.iqamaCalendar[9]['16'][0] = '+999'
+  assert.throws(() => compileCalendar(config, options), /Iqama-Abstand/)
+  config.iqamaCalendar[9]['16'][0] = '05:00'
+  assert.throws(() => compileCalendar(config, options), /nicht nach dem Adhan/)
+})
+
 test('calendar stops at year boundary instead of inventing next year’s times', () => {
   const compiled = compileCalendar(fixture(), { fetchedAt: '2026-12-31T12:00:00Z', count: 30 })
   assert.equal(compiled.days.length, 1)

@@ -37,6 +37,19 @@ export function validateTime(time) {
   return time
 }
 
+function iqamaTimestamp(date, value, adhan) {
+  if (value == null || value === '') return null
+  if (typeof value !== 'string') throw new Error(`Ungültige Iqama: ${String(value)}`)
+  if (/^\+\d{1,3}$/.test(value)) {
+    const minutes = Number(value.slice(1))
+    if (minutes < 1 || minutes > 180) throw new Error(`Ungültiger Iqama-Abstand: ${value}`)
+    return adhan + minutes * 60000
+  }
+  const instant = berlinTimestamp(date, validateTime(value))
+  if (instant <= adhan) throw new Error(`Iqama liegt nicht nach dem Adhan: ${date} ${value}`)
+  return instant
+}
+
 // Resolve each wall-clock time independently. The DST offset at midnight may
 // differ from the offset at Fajr on the same day. No Intl needed on the band.
 export function berlinTimestamp(date, time) {
@@ -84,6 +97,9 @@ export function compileCalendar(config, { fetchedAt, count = 30 }) {
   if (!Number.isInteger(count) || count < 2 || count > 31) throw new Error('Es werden 2 bis 31 Tage unterstützt.')
   if (config.timezone !== ZONE) throw new Error('Die Moschee muss die Zeitzone Europe/Berlin verwenden.')
   if (!Array.isArray(config.calendar) || config.calendar.length !== 12) throw new Error('Jahreskalender fehlt.')
+  if (config.iqamaCalendar != null && (!Array.isArray(config.iqamaCalendar) || config.iqamaCalendar.length !== 12)) {
+    throw new Error('Iqama-Jahreskalender hat ein unerwartetes Format.')
+  }
   if (config.fajrFixationComparedToShuruq != null || config.jumuaAsDuhr) {
     throw new Error('Diese Moschee verwendet noch nicht unterstützte Anpassungen der Gebetszeiten.')
   }
@@ -103,6 +119,10 @@ export function compileCalendar(config, { fetchedAt, count = 30 }) {
       throw new Error(`Gebetszeiten sind nicht chronologisch: ${date}`)
     }
     const prayerTimes = [times[0], ...times.slice(2)] // Shuruk is not a prayer.
+    const iqamaTimes = config.iqamaCalendar?.[month]?.[String(day)]
+    if (iqamaTimes != null && (!Array.isArray(iqamaTimes) || iqamaTimes.length !== 5)) {
+      throw new Error(`Ungültige Iqama-Tagesdaten: ${date}`)
+    }
     // Detect stale HTML / year mismatch / display overrides for the fetched day.
     if (i === 0 && (JSON.stringify(prayerTimes) !== JSON.stringify(config.times) || times[1] !== config.shuruq)) {
       throw new Error('Tagesanzeige und Kalender stimmen nicht überein. Frische Seite abrufen und Abrufdatum prüfen.')
@@ -112,9 +132,12 @@ export function compileCalendar(config, { fetchedAt, count = 30 }) {
       start: berlinTimestamp(date, '00:00'),
       end: berlinTimestamp(addDays(date, 1), '00:00'),
       sunrise: times[1],
-      prayers: prayerTimes.map((time, index) => ({
-        id: IDS[index], label: LABELS[index], time, at: berlinTimestamp(date, time)
-      }))
+      prayers: prayerTimes.map((time, index) => {
+        const at = berlinTimestamp(date, time)
+        const iqamaAt = iqamaTimes ? iqamaTimestamp(date, iqamaTimes[index], at) : null
+        return { id: IDS[index], label: LABELS[index], time, at,
+          ...(iqamaAt == null ? {} : { iqamaAt }) }
+      })
     })
   }
   return {

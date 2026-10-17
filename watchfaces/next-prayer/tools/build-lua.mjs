@@ -6,6 +6,7 @@ import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { packLuaFace, readLuaFiles } from './lua-format.mjs'
+import { berlinTimestamp } from '../../../examples/prayer-times/tools/calendar.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const toolkit = path.resolve(process.env.BAND10_TOOLKIT || path.join(root, '../../../band10-toolkit'))
@@ -17,9 +18,13 @@ const sharp = toolkitRequire('sharp')
 const calendarPath = path.join(root, '../../examples/prayer-times/src/common/calendar.json')
 const calendarBytes = await readFile(calendarPath)
 const calendar = JSON.parse(calendarBytes)
+const settings = JSON.parse(await readFile(path.join(root, 'settings.json')))
+assert.ok(Number.isInteger(settings.iqamaFallbackMinutes) && settings.iqamaFallbackMinutes >= 1 && settings.iqamaFallbackMinutes <= 180)
+const fallbackSeconds = settings.iqamaFallbackMinutes * 60
 assert.equal(calendar.timezone, 'Europe/Berlin')
 assert.ok(calendar.days.length > 1 && calendar.days.length <= 31)
 const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+const berlinClock = new Intl.DateTimeFormat('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 const quote = value => '"' + String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n').replaceAll('\r', '\\r') + '"'
 let previousEnd
 const days = calendar.days.map(day => {
@@ -32,17 +37,23 @@ const days = calendar.days.map(day => {
     assert.ok(ms / 1000 > 0 && ms / 1000 <= 0x7fffffff, 'Zeit außerhalb des getesteten 32-bit-Bereichs')
     return ms / 1000
   }
+  const sunrise = seconds(berlinTimestamp(day.date, day.sunrise))
   const prayers = day.prayers.map((prayer, index) => {
     assert.equal(prayer.id, names[index].toLowerCase())
     assert.match(prayer.time, /^\d{2}:\d{2}$/)
     assert.ok(prayer.at >= day.start && prayer.at < day.end)
     if (index) assert.ok(prayer.at > day.prayers[index - 1].at)
-    return `{id=${quote(prayer.id)},label=${quote(names[index])},time=${quote(prayer.time)},at=${seconds(prayer.at)}}`
+    const at = seconds(prayer.at)
+    const iqamaAt = prayer.iqamaAt == null ? at + fallbackSeconds : seconds(prayer.iqamaAt)
+    const nextAt = index === 0 ? sunrise : index < 4 ? seconds(day.prayers[index + 1].at) : seconds(day.end)
+    assert.ok(iqamaAt > at && iqamaAt < nextAt, `Iqama außerhalb des Gebetsfensters: ${day.date} ${prayer.id}`)
+    return `{id=${quote(prayer.id)},label=${quote(names[index])},time=${quote(prayer.time)},at=${at},iqamaAt=${iqamaAt},iqamaTime=${quote(berlinClock.format(new Date(iqamaAt * 1000)))},iqamaSource=${quote(prayer.iqamaAt == null ? 'fallback' : 'mawaqit')}}`
   })
-  return `{date=${quote(day.date)},start=${seconds(day.start)},finish=${seconds(day.end)},prayers={${prayers.join(',')}}}`
+  assert.ok(sunrise > seconds(day.prayers[0].at) && sunrise < seconds(day.prayers[1].at))
+  return `{date=${quote(day.date)},start=${seconds(day.start)},finish=${seconds(day.end)},sunrise=${quote(day.sunrise)},sunriseAt=${sunrise},prayers={${prayers.join(',')}}}`
 })
 const validThrough = calendar.days.at(-1).date.slice(8) + '.' + calendar.days.at(-1).date.slice(5, 7) + '.'
-const luaCalendar = `-- Generated from the existing MAWAQIT snapshot; Unix seconds.\nreturn {validThrough=${quote(validThrough)},days={\n${days.join(',\n')}\n}}\n`
+const luaCalendar = `-- Generated from the existing MAWAQIT snapshot; Unix seconds.\nreturn {validThrough=${quote(validThrough)},iqamaFallbackMinutes=${settings.iqamaFallbackMinutes},days={\n${days.join(',\n')}\n}}\n`
 const build = path.join(root, 'build/lua')
 const app = path.join(build, 'app/lua')
 const dist = path.join(root, 'dist')
@@ -68,7 +79,7 @@ const previewPath = path.join(build, 'images/preview.png')
 await sharp(Buffer.from(svg)).png().toFile(previewPath)
 const preview = (await encodeImageFile(previewPath, true)).block
 const files = await Promise.all(['main.lua', 'prayer_calendar.lua', 'prayer_logic.lua'].map(async name => ({ name: `lua/${name}`, data: await readFile(path.join(app, name)) })))
-const binary = packLuaFace({ id: '122880003', name: 'Halle Next Prayer 2', files, preview })
+const binary = packLuaFace({ id: '122880004', name: 'Halle Next Prayer 3', files, preview })
 const inspection = inspectWatchFace(binary)
 assert.deepEqual(inspection.warnings, [])
 assert.equal(inspection.faces[0].elements[0].referenceType, 5)
@@ -78,7 +89,7 @@ const decoded = decodeImageBlock(binary, inspection.header.previewOffset)
 assert.deepEqual([decoded.width, decoded.height], [212, 520])
 await writeFile(path.join(dist, 'next-prayer-lua.face'), binary)
 await writeFile(path.join(dist, 'next-prayer-lua.bin'), binary)
-await writeFile(path.join(build, 'next-prayer.fprj'), `<?xml version="1.0" encoding="utf-8"?>\n<FaceProject DeviceType="466"><Screen Title="Halle Next Prayer" Bitmap="preview.png"><Widget Shape="34" Name="app_lua%2Fmain.lua" X="0" Y="0" Width="212" Height="520" Alpha="0" Visible_Src="0" /></Screen></FaceProject>\n`)
+await writeFile(path.join(build, 'next-prayer.fprj'), `<?xml version="1.0" encoding="utf-8"?>\n<FaceProject DeviceType="466"><Screen Title="Halle Next Prayer 3" Bitmap="preview.png"><Widget Shape="34" Name="app_lua%2Fmain.lua" X="0" Y="0" Width="212" Height="520" Alpha="0" Visible_Src="0" /></Screen></FaceProject>\n`)
 const report = {
   target: 'Xiaomi Smart Band 10 / o66', userFirmware: '3.2.8', installer: 'Notify',
   hardwareTested: false, runtime: 'Lua + LVGL + dataman.timeSecond',

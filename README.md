@@ -22,7 +22,7 @@ See the [multi-screen adaptation guide](https://iot.mi.com/vela/quickapp/en/guid
 - **`scripts/`** - CLI tools for building, deploying, and testing apps (no IDE required)
 - **`examples/songbird/`** - A working example app (Hebrew lullaby songbook for Mi Band 8 Pro)
 - **[`examples/prayer-times/`](examples/prayer-times/README.md)** - Prayer times and next-prayer countdown for Smart Band 10, with an offline MAWAQIT calendar for Halle (Saale)
-- **[`watchfaces/next-prayer/`](watchfaces/next-prayer/README.md)** - Lua watchface for Smart Band 10 with a live next-prayer countdown and an offline Halle (Saale) calendar; the earlier static toolkit feasibility demo remains available
+- **[`watchfaces/next-prayer/`](watchfaces/next-prayer/README.md)** - Lua watchface for Smart Band 10 with live Adhan, Iqama, and sunrise countdowns from an offline Halle (Saale) calendar; the earlier static toolkit feasibility demo remains available
 - **`docs/`** - Detailed documentation on the framework and deployment process
 
 ## Quick Start
