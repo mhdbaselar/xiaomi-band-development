@@ -1,0 +1,77 @@
+<template>
+  <div class="page">
+    <text class="location">HALLE (SAALE)</text>
+    <text class="heading">Nächstes Gebet</text>
+    <div class="hero">
+      <text class="name">{{ nextName }}</text>
+      <text class="time">{{ nextTime }}</text>
+      <text class="countdown">{{ countdown }}</text>
+      <text class="caption">{{ caption }}</text>
+    </div>
+    <text class="today">{{ today }}</text>
+    <div class="times">
+      <div for="{{ rows }}" class="row">
+        <text class="label">{{ $item.label }}</text>
+        <text class="value">{{ $item.time }}</text>
+      </div>
+    </div>
+    <text class="source">Offline · IKC Halle</text>
+  </div>
+</template>
+<script>
+import calendar from '../../common/calendar.json'
+import { getPrayerState, shortDate } from '../../common/prayers'
+
+var tickTimer = null
+var names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
+
+export default {
+  private: {
+    nextName: '', nextTime: '', countdown: '--:--:--', caption: 'BIS ZUM ADHAN',
+    today: '', rows: []
+  },
+  onInit() { this.refresh() },
+  onShow() {
+    this.stopTimer()
+    this.refresh()
+    var card = this
+    tickTimer = setInterval(function () { card.refresh() }, 1000)
+  },
+  onHide() { this.stopTimer() },
+  onDestroy() { this.stopTimer() },
+  stopTimer() {
+    if (tickTimer !== null) clearInterval(tickTimer)
+    tickTimer = null
+  },
+  refresh() {
+    var state = getPrayerState(calendar, Date.now())
+    this.nextName = state.next ? state.next.label : 'Keine Zeiten'
+    this.nextTime = state.next
+      ? (state.tomorrow ? 'Morgen · ' : 'Heute · ') + state.next.time
+      : 'Kalender erneuern'
+    this.countdown = state.countdown
+    this.caption = state.status === 'due' ? 'JETZT' : 'BIS ZUM ADHAN'
+    this.today = state.day ? shortDate(state.day.date) + ' · Sonnenaufgang ' + state.day.sunrise : 'Keine aktuellen Daten'
+    this.rows = names.map(function (label, index) {
+      return { label: label,
+        time: state.day ? state.day.prayers[index].time : '--:--' }
+    })
+  }
+}
+</script>
+<style>
+.page { flex-direction: column; align-items: center; background-color: #000000; padding-top: 36px; }
+.location { height: 28px; font-size: 18px; font-weight: bold; color: #d6eee0; text-align: center; }
+.heading { height: 29px; font-size: 17px; color: #a2b9ae; text-align: center; }
+.hero { width: 180px; height: 172px; border-radius: 18px; background-color: #0d2119; flex-direction: column; align-items: center; justify-content: center; }
+.name { height: 42px; font-size: 31px; font-weight: bold; color: #79e2b4; text-align: center; }
+.time { height: 29px; font-size: 17px; color: #e2e9e5; text-align: center; }
+.countdown { height: 46px; font-size: 34px; font-weight: bold; color: #ffffff; text-align: center; }
+.caption { height: 24px; font-size: 12px; color: #a2b9ae; text-align: center; }
+.today { width: 196px; height: 42px; margin-top: 11px; font-size: 13px; color: #a2b9ae; text-align: center; }
+.times { width: 170px; flex-direction: column; }
+.row { width: 170px; height: 31px; flex-direction: row; align-items: center; justify-content: space-between; }
+.label { font-size: 17px; color: #d6eee0; }
+.value { font-size: 18px; font-weight: bold; color: #ffffff; text-align: right; }
+.source { height: 26px; font-size: 12px; color: #a2b9ae; text-align: center; }
+</style>

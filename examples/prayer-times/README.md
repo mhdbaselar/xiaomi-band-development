@@ -28,7 +28,17 @@ npm test
 npm run build
 ```
 
-Ausgabe: `dist/de.halle.gebetszeiten.debug.0.1.0.rpk`.
+Ausgabe: `dist/de.halle.gebetszeiten.debug.0.2.0.rpk`.
+
+## Experimentelle Seitenkachel mit Notify
+
+Version 0.2.0 enthält zusätzlich eine Widget-Komponente (`src/widgets/next/index.ux`). Im `router.widgets`-Abschnitt des Manifests ist sie als Standardkarte registriert. Sie zeigt denselben Offline-Kalender und Countdown wie die App. Das lokale Vela-Build-Werkzeug legt ihre kompilierte Datei im `.rpk` ab.
+
+**Die Registrierung als seitlich erreichbare Kachel auf dem Smart Band 10 ist nicht bestätigt.** Ein erfolgreich installiertes `.rpk` beweist nur, dass die App installiert wurde. Die Kachel erscheint erst, wenn die Firmware diese Art von Karten in ihre Auswahlliste übernimmt. [Notify erklärt](https://www.mibandnotify.com/features/device-customization.php), dass Kachel- und Menüfunktionen vom jeweiligen Gerät und dessen Firmware abhängen.
+
+Für den Test mit Notify: Die neue `.rpk` in Notify for Xiaomi unter **Gerät → Drittanbieter-App → Hochladen** auswählen. Notify öffnet danach seine Ansicht **Update firmware**, erkennt die Datei als **Valid app file** und installiert sie über **Install**. Danach auf dem Band in der Kachelauswahl nach **„Nächstes Gebet“** schauen.
+
+**Gerätetest am 17. Oktober 2026:** Notify meldete auf einem verbundenen Xiaomi Band 10 mit Firmware 3.2.8 **Update completed**; „Gebetszeiten“ wurde anschließend unter **Drittanbieter-App** geführt. Unter **Band settings → Widget** blieb die Liste bei den vier vorhandenen Systemkacheln. Der Plus-Knopf zeigte vor und nach der Installation **Error: this watch model may not be supported yet**. Der Nutzer prüfte auch die Kachelauswahl direkt am Band: Dort erschienen nur vorinstallierte Kacheln. Die eigene Seitenkachel lässt sich auf dieser Kombination aus Notify und Band-Firmware derzeit nicht hinzufügen. Die Widget-Komponente bleibt als experimenteller Prototyp im Quelltext; ihr Vorhandensein im `.rpk` reicht dafür nicht aus.
 
 In dieser Arbeitskopie werden die bereits vorhandenen Build-Werkzeuge aus `../songbird/node_modules` über einen lokalen, nicht versionierten Symlink verwendet. Ein frischer Checkout installiert sie mit `npm install` selbst.
 

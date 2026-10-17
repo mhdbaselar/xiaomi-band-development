@@ -1,6 +1,6 @@
 {
   "name": "halle-prayer-times",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Gebetszeiten und Countdown für das Xiaomi Smart Band 10",
   "engines": { "node": ">=20" },
