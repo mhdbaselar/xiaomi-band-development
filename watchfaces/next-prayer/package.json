@@ -13,6 +13,7 @@
     "check": "node --test tests/lua.test.mjs",
     "validate": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
     "inspect": "node tools/toolkit.mjs inspect-lua",
+    "deploy:notify": "node ../../scripts/deploy-notify.mjs --watchface original",
     "preview": "node tools/preview-lua.mjs",
     "generate:static": "node tools/generate.mjs",
     "check:static": "node tools/toolkit.mjs check",

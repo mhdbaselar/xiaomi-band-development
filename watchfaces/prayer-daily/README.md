@@ -27,6 +27,10 @@ Der eingebettete Kalender gilt vom **16. Oktober bis 14. November 2026** (Europe
 
 `npm run package` prüft Paketstruktur, Kalendergrenzen und die Abfolge Adhan/Iqama/Sonnenaufgang sowie Sekunden-Updates, Schlafen und Aufwachen. Die Metriktests prüfen außerdem skalierte Firmware-Werte, fehlende Messwerte und den Schritt-Reset auf null. Die Vorschau liegt unter `build/lua/images/preview.png`; sie verwendet ausdrücklich Beispielwerte für die Band-Metriken. Im installierten Watchface sind keine Beispiel-Messwerte hinterlegt.
 
+## An Notify übertragen
+
+Mit `npm run deploy:notify` wird Daily gebaut, geprüft und per ADB an die Watchface-Vorschau von Notify auf dem Android-Handy übergeben. Den Upload auf das Band anschließend auf dem Handy bestätigen. Optionen wie `--no-build`, `--serial` und `--push-only` stehen in der [Deploy-Anleitung](../../docs/deployment-notify.md).
+
 ## Laufende Browser-Vorschau
 
 Mit `npm run preview` wird Daily neu gebaut und die Vorschau unter **http://127.0.0.1:5175/** gestartet. Die Beispielwerte für Wetter, Akku, Schritte und Puls lassen sich dort ändern oder vollständig ausblenden. Uhr und Countdown laufen mit dem echten Lua-Code. Mit `Ctrl+C` wird der Server beendet. Der Browser verwendet eine Ersatzschrift und bildet die Firmware nicht vollständig nach. Die ursprüngliche Vorschau kann daneben auf Port `5174` laufen.

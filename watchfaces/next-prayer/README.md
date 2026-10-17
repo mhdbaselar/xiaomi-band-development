@@ -8,6 +8,8 @@ Der aktuelle Kalender enthält Adhan und Sonnenaufgang, aber **keine veröffentl
 
 ## Bauen und auf dem Band prüfen
 
+Für die Übergabe an Notify gibt es zusätzlich `npm run deploy:notify`: Es baut und prüft dieses ursprüngliche Watchface und öffnet dessen Import auf dem per ADB verbundenen Android-Handy. Den Upload auf das Band dort bestätigen. Weitere Optionen stehen in der [Deploy-Anleitung](../../docs/deployment-notify.md).
+
 Im Verzeichnis `watchfaces/next-prayer` mit Node.js 22 oder neuer:
 
 ```sh

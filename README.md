@@ -24,6 +24,7 @@ See the [multi-screen adaptation guide](https://iot.mi.com/vela/quickapp/en/guid
 - **[`examples/prayer-times/`](examples/prayer-times/README.md)** - Prayer times and next-prayer countdown for Smart Band 10, with an offline MAWAQIT calendar for Halle (Saale)
 - **[`watchfaces/next-prayer/`](watchfaces/next-prayer/README.md)** - Lua watchface for Smart Band 10 with live Adhan, Iqama, and sunrise countdowns from an offline Halle (Saale) calendar; the earlier static toolkit feasibility demo remains available
 - **[`watchfaces/prayer-daily/`](watchfaces/prayer-daily/README.md)** - Separate watchface with time, date, event-specific prayer countdown, weather, battery, steps, and heart rate; its own package ID preserves the original Next Prayer face
+- **[`scripts/deploy-notify.sh`](scripts/deploy-notify.sh)** - Build, validate, and transfer either watchface to Notify for Xiaomi over ADB; see the [Notify deployment guide](docs/deployment-notify.md)
 - **`docs/`** - Detailed documentation on the framework and deployment process
 
 ## Quick Start
