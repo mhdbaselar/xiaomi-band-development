@@ -29,7 +29,7 @@ Der eingebettete Kalender gilt vom **16. Oktober bis 14. November 2026** (Europe
 
 ## An Notify übertragen
 
-Mit `npm run deploy:notify` wird Daily gebaut, geprüft und per ADB an die Watchface-Vorschau von Notify auf dem Android-Handy übergeben. Den Upload auf das Band anschließend auf dem Handy bestätigen. Optionen wie `--no-build`, `--serial` und `--push-only` stehen in der [Deploy-Anleitung](../../docs/deployment-notify.md).
+Mit `npm run deploy:notify` wird Daily gebaut, geprüft und per ADB an Notify übergeben. Das Skript drückt automatisch Install und wartet auf den Abschlussstatus. Das Handy muss dafür entsperrt und Notify mit dem Band verbunden sein. Mit `--no-install` wird nur die Vorschau geöffnet. Weitere Optionen stehen in der [Deploy-Anleitung](../../docs/deployment-notify.md).
 
 ## Laufende Browser-Vorschau
 

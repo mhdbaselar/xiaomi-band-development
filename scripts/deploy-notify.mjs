@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { readLuaFiles } from '../watchfaces/next-prayer/tools/lua-format.mjs'
+import { installNotify } from './notify-install.mjs'
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url))
 const notifyPackage = 'com.mc.xiaomi1'
@@ -13,7 +14,7 @@ const variants = {
   original: { directory: 'next-prayer', artifact: 'next-prayer-lua.face', id: '122880004', name: 'Halle Next Prayer 3' }
 }
 
-export const help = `Watchface bauen, per ADB übertragen und den Notify-Import öffnen.
+export const help = `Watchface bauen, per ADB übertragen und mit Notify installieren.
 
 Aufruf:
   ./scripts/deploy-notify.sh [Optionen]
@@ -23,6 +24,7 @@ Optionen:
   --watchface daily|original  Watchface auswählen (Standard: daily)
   --serial SERIAL            Android-Handy auswählen; sonst genau ein erreichbares Handy
   --no-build                 Vorhandenes Paket verwenden
+  --no-install               Nur die Vorschau öffnen, Install nicht automatisch drücken
   --push-only                Nur übertragen, Notify nicht öffnen
   --dry-run                  Plan anzeigen, ohne Build oder Gerätezugriff
   -h, --help                 Hilfe anzeigen
@@ -31,12 +33,12 @@ Umgebung:
   ADB                       Pfad zur adb-Datei (Standard: adb im PATH)
   PHONE_SERIAL              Vorgabe für --serial (alternativ ANDROID_SERIAL)
 
-Notify for Xiaomi muss mit dem Band verbunden sein. Die Übertragung auf das
-Band wird anschließend auf dem Handy in Notify bestätigt.
+Das Handy muss entsperrt und Notify for Xiaomi mit dem Band verbunden sein.
+Install wird einmal automatisch gedrückt; das Skript wartet auf Notify-Abschluss.
 `
 
 export function parseArgs(argv) {
-  const options = { watchface: 'daily', build: true, pushOnly: false, dryRun: false }
+  const options = { watchface: 'daily', build: true, install: true, pushOnly: false, dryRun: false }
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index]
     if (arg === '--watchface' || arg === '--serial') {
@@ -44,6 +46,7 @@ export function parseArgs(argv) {
       if (!value || value.startsWith('--')) throw new Error(`Wert für ${arg} fehlt.`)
       options[arg === '--watchface' ? 'watchface' : 'serial'] = value
     } else if (arg === '--no-build') options.build = false
+    else if (arg === '--no-install') options.install = false
     else if (arg === '--push-only') options.pushOnly = true
     else if (arg === '--dry-run') options.dryRun = true
     else if (arg === '--help' || arg === '-h') options.help = true
@@ -97,7 +100,8 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
     log(`Build: ${options.build ? `npm run package in ${project}` : 'übersprungen'}`)
     log(`Paket: ${artifact}`)
     log(`Ziel: Download/XiaomiWatchfaces/${variant.directory}-${variant.id}-<sha256>-<run>.face`)
-    log(options.pushOnly ? 'Danach: nur Dateiübertragung.' : 'Danach: Notify-Watchface-Import öffnen; auf dem Handy bestätigen.')
+    log(options.pushOnly ? 'Danach: nur Dateiübertragung.' : options.install ?
+      'Danach: Notify öffnen, Install automatisch drücken und auf Abschluss warten.' : 'Danach: nur Notify-Vorschau öffnen.')
     return { dryRun: true }
   }
 
@@ -133,7 +137,7 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
     const transferred = shell(['sha256sum', remote]).trim().split(/\s/)[0]
     if (transferred.toLowerCase() !== sha256) throw new Error('Die übertragene Datei stimmt nicht mit dem lokalen Paket überein.')
     log(`Übertragen und SHA-256 geprüft: ${remote}`)
-    return { serial, remote, sha256, opened: false }
+    return { serial, remote, sha256, opened: false, installed: false }
   }
   const user = shell(['am', 'get-current-user']).trim()
   if (!/^\d+$/.test(user)) throw new Error('Das aktuelle Android-Profil konnte nicht bestimmt werden.')
@@ -174,8 +178,38 @@ export async function deployNotify(options, { root = repositoryRoot, run = runCo
   if (!/^Status:\s*ok\s*$/m.test(result) || /(?:Error:|Exception|Permission Denial)/i.test(result)) {
     throw new Error(`Die Datei liegt unter ${remote}, aber Notify konnte sie nicht öffnen. Bitte dort manuell importieren.\n${result.trim()}`)
   }
-  log(`Notify-Import für ${variant.name} geöffnet. Die Installation auf dem Band jetzt auf dem Handy bestätigen.`)
-  return { serial, remote, uri, sha256, opened: true }
+  if (!options.install) {
+    log(`Notify-Import für ${variant.name} geöffnet. Die Installation auf dem Band jetzt auf dem Handy bestätigen.`)
+    return { serial, remote, uri, sha256, opened: true, installed: false }
+  }
+  const uiPath = `/data/local/tmp/notify-deploy-${randomUUID()}.xml`
+  let installation
+  try {
+    installation = await installNotify({
+      component, log,
+      readUI: () => {
+        const dumped = shell(['uiautomator', 'dump', uiPath])
+        if (!/dumped to:/.test(dumped)) throw new Error('Android konnte keinen frischen UI-Dump erstellen.')
+        return command(['exec-out', 'cat', uiPath])
+      },
+      foreground: () => shell(['dumpsys', 'activity', 'activities']),
+      tap: (x, y) => shell(['input', 'tap', String(x), String(y)])
+    })
+  } finally {
+    try { shell(['rm', '-f', uiPath]) } catch { /* Preserve the original result if cleanup fails. */ }
+  }
+  let screenshot
+  try {
+    const png = command(['exec-out', 'screencap', '-p'], { encoding: null })
+    if (Buffer.isBuffer(png) && png.subarray(0, 8).toString('hex') === '89504e470d0a1a0a') {
+      const directory = path.join(project, 'build/notify')
+      await mkdir(directory, { recursive: true })
+      screenshot = path.join(directory, 'install-completed.png')
+      await writeFile(screenshot, png)
+    }
+  } catch { /* A screenshot failure must not change a confirmed installation result. */ }
+  log(`Notify bestätigt die Installation von ${variant.name}: ${installation.status}`)
+  return { serial, remote, uri, sha256, opened: true, installed: true, screenshot }
 }
 
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {

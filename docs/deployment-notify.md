@@ -1,8 +1,8 @@
 # Watchfaces an Notify übertragen
 
-Das Skript baut das ausgewählte Watchface einschließlich Tests, prüft die Paket-ID, überträgt es per ADB und öffnet die Watchface-Vorschau in **Notify for Xiaomi**. Dort wird der Bluetooth-Upload auf das Band bestätigt. Ein erfolgreicher Skriptlauf bedeutet, dass der Import geöffnet wurde; er bestätigt keine abgeschlossene Band-Installation.
+Das Skript baut das ausgewählte Watchface einschließlich Tests, prüft die Paket-ID, überträgt es per ADB und öffnet die Watchface-Vorschau in **Notify for Xiaomi**. Anschließend drückt es automatisch **Install** und wartet, bis Notify den Upload mit **„Update completed“** bestätigt. Damit ist die Übertragung aus Sicht von Notify abgeschlossen; die Darstellung des Watchfaces kann anschließend am Band geprüft werden.
 
-Voraussetzungen: Node.js 22+, npm, Android Platform Tools (`adb`), ein über USB oder WLAN autorisiertes Android-Handy und Notify for Xiaomi (`com.mc.xiaomi1`) im aktuellen Android-Profil. Notify sollte bereits mit dem Band verbunden sein. Die automatische Dateiübergabe verwendet Androids MediaStore.Downloads (Android 10+).
+Voraussetzungen: Node.js 22+, npm, Android Platform Tools (`adb`), ein über USB oder WLAN autorisiertes und **entsperrtes** Android-Handy und Notify for Xiaomi (`com.mc.xiaomi1`) im aktuellen Android-Profil. Notify muss bereits mit dem Band verbunden sein. Die automatische Dateiübergabe verwendet Androids MediaStore.Downloads (Android 10+).
 
 ## Start
 
@@ -30,6 +30,9 @@ Daily ist die Standardauswahl. Die Paket-IDs bleiben getrennt: `122880006` für 
 # Vorhandenes Paket verwenden
 ./scripts/deploy-notify.sh --watchface daily --no-build
 
+# Nur die Vorschau öffnen und später selbst auf Install drücken
+./scripts/deploy-notify.sh --no-install
+
 # Bei mehreren erreichbaren Handys eines gezielt auswählen
 adb devices -l
 ./scripts/deploy-notify.sh --serial DEINE_ADB_SERIENNUMMER
@@ -45,6 +48,14 @@ Ohne `--serial` muss genau ein physisches Android-Handy erreichbar sein; Emulato
 
 Jeder Lauf legt eine eigene Datei in `Download/XiaomiWatchfaces` an. Der Name enthält Variante, Paket-ID, einen Teil des SHA-256 und eine Laufkennung. Nach dem Übertragen wird die Datei zurückgelesen und der vollständige SHA-256 verglichen. Ein falsches Paket oder eine fehlerhafte Übertragung öffnet den Import nicht.
 
+## Automatisch installieren
+
+Die UI-Automatisierung liest nach dem Import einen frischen Android-UI-Dump. Sie prüft die gültige Watchface-Vorschau, den aktivierten Install-Button mit der Ressourcen-ID `com.mc.xiaomi1:id/buttonStartUpdate` und die aktive `WatchfaceUploadActivity`. Die Klickposition wird aus den aktuellen Button-Grenzen ermittelt. Es werden keine festen Bildschirmkoordinaten verwendet. Der Install-Button wird genau einmal gedrückt.
+
+Danach wartet das Skript bis zu drei Minuten auf den Abschlussstatus von Notify. `100%` allein zählt nicht als Abschluss. Bei einer Fehlermeldung, einem gesperrten Handy, einem anderen Bildschirm oder einem fehlenden Abschluss wird ein Fehler gemeldet. Es erfolgt kein erneuter Install-Klick. `--no-install` lässt den bisherigen manuellen Ablauf zu.
+
+Nach einem bestätigten Abschluss wird nach Möglichkeit ein Screenshot unter `watchfaces/<projekt>/build/notify/install-completed.png` gespeichert. Die Installation wurde mit Notify 23.9.0 auf dem angeschlossenen Handy einschließlich des Status **„Update completed“** getestet.
+
 ## Dateiübergabe unter aktuellem Android
 
 Notify 23.9.0 bietet auf dem geprüften Handy einen exportierten `WatchfaceUploadActivity`-Import für `ACTION_VIEW` und `application/octet-stream`. Das Skript ermittelt diesen Import vor der Übertragung und adressiert ihn ausdrücklich, damit die Datei nicht beim Firmware-Importer landet.
@@ -56,5 +67,5 @@ Falls sich die Notify-Importschnittstelle in einer späteren Version ändert, br
 Die automatisierten Tests des Deploy-Ablaufs laufen ohne Handy:
 
 ```sh
-node --test scripts/tests/deploy-notify.test.mjs
+npm --prefix scripts run test:notify
 ```

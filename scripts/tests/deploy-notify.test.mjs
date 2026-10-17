@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { deployNotify, parseArgs, selectDevice } from '../deploy-notify.mjs'
 import { packLuaFace } from '../../watchfaces/next-prayer/tools/lua-format.mjs'
+import { notifyUI, foreground } from './fixtures/notify-ui.mjs'
 
 async function fixture(id = '122880006') {
   const root = await mkdtemp(path.join(tmpdir(), 'notify deploy '))
@@ -20,6 +21,7 @@ async function fixture(id = '122880006') {
 
 function phone({ sha256, binary, handlers = true } = {}) {
   const calls = []
+  let uiReads = 0
   const run = (command, args, options) => {
     calls.push({ command, args, options })
     if (args[0] === 'devices') return 'List of devices attached\nemulator-5554 device\nphone-one device model:Test\n'
@@ -31,6 +33,10 @@ function phone({ sha256, binary, handlers = true } = {}) {
     if (remote.includes("'sha256sum'")) return `${sha256}  watchface.face\n`
     if (remote.includes("'content' 'query'")) return 'Row: 0 _id=987\n'
     if (remote.includes("'content' 'read'")) return binary
+    if (remote.includes("'uiautomator' 'dump'")) return 'UI hierchary dumped to: /data/local/tmp/notify.xml\n'
+    if (args[2] === 'exec-out' && args[3] === 'cat') return uiReads++ === 0 ? notifyUI() :
+      notifyUI({ status: 'Update completed', enabled: false, progress: 100 })
+    if (remote.includes("'dumpsys' 'activity' 'activities'")) return foreground
     if (remote.includes("'am' 'start'")) return 'Status: ok\nActivity: com.mc.xiaomi1/.ui.watchfaces.WatchfaceUploadActivity\n'
     return ''
   }
@@ -44,6 +50,7 @@ test('builds, targets one physical phone, checks transferred bytes and pins the 
   try {
     const result = await deployNotify(parseArgs([]), { ...data, ...device, env: {}, log: message => messages.push(message) })
     assert.equal(result.opened, true)
+    assert.equal(result.installed, true)
     assert.equal(device.calls[0].command, process.platform === 'win32' ? 'npm.cmd' : 'npm')
     assert.equal(device.calls[0].options.cwd, path.join(data.root, 'watchfaces/prayer-daily'))
     const write = device.calls.find(call => call.args[3] === '-T')
@@ -55,7 +62,8 @@ test('builds, targets one physical phone, checks transferred bytes and pins the 
     assert.doesNotMatch(launch.args.at(-1), /UpdateFirmware/)
     assert.match(launch.args.at(-1), /content:\/\/media\/external_primary\/downloads\/987/)
     assert.match(launch.args.at(-1), /'0x10000001'/)
-    assert.match(messages.at(-1), /auf dem Handy bestätigen/)
+    assert.equal(device.calls.filter(call => call.args.at(-1).includes("'input' 'tap'")).length, 1)
+    assert.match(messages.at(-1), /Update completed/)
   } finally { await rm(data.root, { recursive: true, force: true }) }
 })
 
@@ -92,6 +100,17 @@ test('push-only stages a verified file without launching or querying Notify', as
     const result = await deployNotify(parseArgs(['--no-build', '--push-only']), { ...data, ...device, env: {}, log() {} })
     assert.equal(result.opened, false)
     assert.ok(!device.calls.some(call => /query-activities|'am' 'start'|'pm' 'path'/.test(call.args.at(-1))))
+  } finally { await rm(data.root, { recursive: true, force: true }) }
+})
+
+test('no-install keeps the manual preview workflow without UI automation', async () => {
+  const data = await fixture()
+  const device = phone(data)
+  try {
+    const result = await deployNotify(parseArgs(['--no-build', '--no-install']), { ...data, ...device, env: {}, log() {} })
+    assert.equal(result.opened, true)
+    assert.equal(result.installed, false)
+    assert.ok(!device.calls.some(call => /'uiautomator'|'input' 'tap'/.test(call.args.at(-1))))
   } finally { await rm(data.root, { recursive: true, force: true }) }
 })
 

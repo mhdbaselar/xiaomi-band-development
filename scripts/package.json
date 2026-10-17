@@ -4,7 +4,7 @@
   "private": true,
   "description": "Development scripts for Xiaomi Mi Band 8 Pro Vela Quick Apps",
   "scripts": {
-    "test:notify": "node --test tests/deploy-notify.test.mjs"
+    "test:notify": "node --test tests/deploy-notify.test.mjs tests/notify-install.test.mjs"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.0",
