@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nächstes Gebet · Lua-Countdown</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #111817; color: #eeeae2; font: 16px system-ui,sans-serif; }
+  main { max-width: 850px; margin: auto; padding: 54px 24px; display: flex; align-items: center; gap: 80px; min-height: 100vh; }
+  .band { position: relative; width: 224px; height: 532px; flex: 0 0 auto; border: 6px solid #38413f; border-radius: 115px; background: #000; overflow: hidden; box-shadow: 0 25px 70px #0008; }
+  .label { position: absolute; left: 50%; transform: translateX(-50%); line-height: 1.15; white-space: nowrap; font-family: Arial,sans-serif; }
+  .eyebrow { color: #85c9ad; letter-spacing: .14em; font-size: 12px; text-transform: uppercase; }
+  h1 { font-weight: 500; font-size: 40px; line-height: 1.1; margin: 20px 0; }
+  p { color: #9aaea5; line-height: 1.6; }
+  .live { margin-top: 32px; color: #85c9ad; }
+  .live::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 8px; }
+  small { display: block; color: #9aaea5; line-height: 1.5; }
+  @media (max-width: 620px) { main { flex-direction: column; gap: 35px; padding-top: 32px; } .info { max-width: 350px; } h1 { font-size: 30px; } }
+</style>
+<main>
+  <div class="band" role="img" aria-label="Watchface mit laufendem Gebetscountdown" id="band"></div>
+  <div class="info">
+    <div class="eyebrow">Smart Band 10 · Halle (Saale)</div>
+    <h1>Das nächste Gebet.<br>Jede Sekunde zählt.</h1>
+    <p>Der Countdown berechnet die verbleibende Zeit bis zum Adhan und wechselt anschließend automatisch zum nächsten Gebet.</p>
+    <p class="live" id="status">Lua wird gestartet …</p>
+    <small>Vorschau des Lua-Codes aus dem Watchface-Paket. Die Gerätefunktionen werden hier nachgebildet; der Test auf Firmware 3.2.8 steht noch aus.</small>
+  </div>
+</main>
+<script>
+  const band = document.querySelector('#band');
+  const status = document.querySelector('#status');
+  let labels = [];
+  async function tick() {
+    try {
+      const response = await fetch('/state');
+      if (!response.ok) throw new Error('Lua unavailable');
+      const state = await response.json();
+      if (labels.length !== state.labels.length) {
+        band.replaceChildren();
+        labels = state.labels.map(() => {
+          const element = document.createElement('span');
+          element.className = 'label'; band.append(element); return element;
+        });
+      }
+      state.labels.forEach((label, index) => {
+        const element = labels[index];
+        element.textContent = label.text;
+        element.style.top = label.y + 'px';
+        element.style.fontSize = label.size + 'px';
+        element.style.color = '#' + label.color.toString(16).padStart(6, '0');
+      });
+      status.textContent = 'Live · ' + new Date(state.at * 1000).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' });
+    } catch {
+      // Do not leave an apparently live, frozen countdown on screen.
+      band.replaceChildren(); labels = [];
+      status.textContent = 'Verbindung zur Lua-Vorschau unterbrochen';
+    } finally { setTimeout(tick, 1000); }
+  }
+  tick();
+</script>
+</html>

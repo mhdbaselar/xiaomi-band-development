@@ -5,12 +5,20 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
-    "generate": "node tools/generate.mjs",
-    "check": "node tools/toolkit.mjs check",
-    "validate": "node tools/toolkit.mjs validate",
-    "build": "node tools/toolkit.mjs build",
-    "package": "node tools/toolkit.mjs package",
-    "inspect": "node tools/toolkit.mjs inspect",
-    "preview": "node tools/toolkit.mjs preview"
+    "build:lua": "node tools/build-lua.mjs",
+    "test:lua": "node --test tests/lua.test.mjs",
+    "build": "node tools/build-lua.mjs",
+    "package": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "test": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "check": "node --test tests/lua.test.mjs",
+    "validate": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
+    "inspect": "node tools/toolkit.mjs inspect-lua",
+    "preview": "node tools/preview-lua.mjs",
+    "generate:static": "node tools/generate.mjs",
+    "check:static": "node tools/toolkit.mjs check",
+    "validate:static": "node tools/toolkit.mjs validate",
+    "build:static": "node tools/toolkit.mjs build",
+    "package:static": "node tools/toolkit.mjs package",
+    "preview:static": "node tools/toolkit.mjs preview"
   }
 }
