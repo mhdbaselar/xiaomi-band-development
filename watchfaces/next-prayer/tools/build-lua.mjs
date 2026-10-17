@@ -68,7 +68,7 @@ const previewPath = path.join(build, 'images/preview.png')
 await sharp(Buffer.from(svg)).png().toFile(previewPath)
 const preview = (await encodeImageFile(previewPath, true)).block
 const files = await Promise.all(['main.lua', 'prayer_calendar.lua', 'prayer_logic.lua'].map(async name => ({ name: `lua/${name}`, data: await readFile(path.join(app, name)) })))
-const binary = packLuaFace({ id: '122880002', name: 'Halle Next Prayer', files, preview })
+const binary = packLuaFace({ id: '122880003', name: 'Halle Next Prayer 2', files, preview })
 const inspection = inspectWatchFace(binary)
 assert.deepEqual(inspection.warnings, [])
 assert.equal(inspection.faces[0].elements[0].referenceType, 5)

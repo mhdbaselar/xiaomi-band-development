@@ -20,11 +20,11 @@ test('embedded Lua code matches sources and package rejects corrupt resources', 
   assert.deepEqual(files[2].data, await readFile(path.join(root, 'lua/prayer_logic.lua')))
   assert.deepEqual(binary, await readFile(path.join(root, 'dist/next-prayer-lua.bin')))
   const previewOffset = binary.readUInt32LE(0x20)
-  assert.deepEqual(packLuaFace({ id: '122880002', name: 'Halle Next Prayer', files, preview: binary.subarray(previewOffset) }), binary)
+  assert.deepEqual(packLuaFace({ id: '122880003', name: 'Halle Next Prayer 2', files, preview: binary.subarray(previewOffset) }), binary)
   const bad = Buffer.from(binary)
   bad.writeUInt32LE(binary.length, 0x118)
   assert.throws(() => readLuaFiles(bad))
-  assert.throws(() => packLuaFace({ id: '122880002', name: 'Test', files: [{ name: '../main.lua', data: 'hi' }], entry: '../main.lua', preview: binary.subarray(previewOffset) }))
+  assert.throws(() => packLuaFace({ id: '122880003', name: 'Test', files: [{ name: '../main.lua', data: 'hi' }], entry: '../main.lua', preview: binary.subarray(previewOffset) }))
 })
 
 test('packaged Lua matches JS at calendar boundaries and updates through firmware callbacks', async () => {

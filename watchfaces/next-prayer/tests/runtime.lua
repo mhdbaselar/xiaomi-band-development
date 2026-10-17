@@ -47,4 +47,10 @@ app:tick(calendar.days[#calendar.days].finish)
 assert(app:text(329) == '--:--:--')
 assert(app:text(273) == 'Kalender erneuern')
 for _, obj in ipairs(app.labels) do assert(obj.flags[2], 'Long-press must bubble to system') end
+for _, obj in ipairs(app.labels) do
+    local p = obj.props
+    assert(p.align == nil, 'Text labels must not use dynamic object alignment')
+    assert(p.x == 0 and p.w == 212 and p.h >= p.text_font.size, 'Text must have a fixed display lane')
+    assert(p.y >= 0 and p.y + p.h <= 520, 'Text lane outside screen')
+end
 print('Lifecycle and live countdown passed: second ticks, sleep/wake, prayer change, clock correction, tomorrow, expiry.')

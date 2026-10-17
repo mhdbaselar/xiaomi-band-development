@@ -3,10 +3,18 @@ local dataman = require("dataman")
 local calendar = require("prayer_calendar")
 local prayers = require("prayer_logic")
 
-local root = lvgl.Object(nil, {
+local screen = lvgl.Object(nil, {
     w = lvgl.HOR_RES(), h = lvgl.VER_RES(),
     bg_color = 0x000000, bg_opa = lvgl.OPA(100),
     border_width = 0, pad_all = 0
+})
+screen:clear_flag(lvgl.FLAG.SCROLLABLE)
+screen:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+-- Keep the content layer at fixed pixel coordinates. Auto-sized labels with
+-- TOP_MID alignment can be repositioned when their text changes on firmware.
+local root = lvgl.Object(screen, {
+    x = 0, y = 0, w = 212, h = 520,
+    bg_opa = 0, border_width = 0, pad_all = 0
 })
 root:clear_flag(lvgl.FLAG.SCROLLABLE)
 root:add_flag(lvgl.FLAG.EVENT_BUBBLE)
@@ -15,7 +23,8 @@ local fonts = {}
 local function label(y, size, color, value)
     if not fonts[size] then fonts[size] = lvgl.Font("MiSans-Regular", size) end
     local obj = lvgl.Label(root, {
-        align = lvgl.ALIGN.TOP_MID, x = 0, y = y,
+        x = 0, y = y, w = 212, h = size + 8, pad_all = 0,
+        text_align = lvgl.ALIGN.TOP_MID,
         text_font = fonts[size], text_color = color, text = value
     })
     obj:add_flag(lvgl.FLAG.EVENT_BUBBLE)
