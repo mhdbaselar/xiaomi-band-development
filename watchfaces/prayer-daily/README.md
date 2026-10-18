@@ -35,4 +35,6 @@ Mit `npm run deploy:notify` wird Daily gebaut, geprüft und per ADB an Notify ü
 
 ## Laufende Browser-Vorschau
 
-Mit `npm run preview` wird Daily neu gebaut und die Vorschau unter **http://127.0.0.1:5175/** gestartet. Die Beispielwerte für Wetter, Akku, Schritte und Puls lassen sich dort ändern oder vollständig ausblenden. Uhr und Countdown laufen mit dem echten Lua-Code. Mit `Ctrl+C` wird der Server beendet. Der Browser verwendet eine Ersatzschrift und bildet die Firmware nicht vollständig nach. Die ursprüngliche Vorschau kann daneben auf Port `5174` laufen.
+Mit `npm run preview` wird Daily neu gebaut und die Vorschau unter **http://127.0.0.1:5175/** gestartet. Der Server überwacht den Lua-Code, den Kalender und die Iqama-Einstellungen. Nach dem Speichern wird automatisch neu gebaut; die offene Browser-Vorschau übernimmt die Änderungen normalerweise innerhalb von ein bis zwei Sekunden. Bei einem Build-Fehler erscheint ein Hinweis; nach der Korrektur und erneutem Speichern läuft die Vorschau weiter. Das Terminal muss geöffnet bleiben. Mit `Ctrl+C` wird der Server beendet.
+
+Die Beispielwerte für Wetter, Akku, Schritte und Puls lassen sich dort ändern oder vollständig ausblenden. Uhr und Countdown laufen mit dem echten Lua-Code. Der Browser verwendet eine Ersatzschrift und bildet die Firmware nicht vollständig nach. Die ursprüngliche Vorschau kann daneben auf Port `5174` laufen.

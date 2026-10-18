@@ -14,6 +14,6 @@
     "validate": "node tools/build-lua.mjs && node --test tests/lua.test.mjs",
     "inspect": "node tools/inspect.mjs",
     "deploy:notify": "node ../../scripts/deploy-notify.mjs --watchface daily",
-    "preview": "node tools/build-lua.mjs && node tools/preview-lua.mjs"
+    "preview": "node tools/preview-lua.mjs"
   }
 }

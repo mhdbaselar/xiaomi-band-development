@@ -58,8 +58,12 @@
         }
       }
       const response = await fetch('/state?' + query);
-      if (!response.ok) throw new Error('Lua unavailable');
       const state = await response.json();
+      if (!response.ok) {
+        band.replaceChildren(); labels = [];
+        status.textContent = state.error || 'Lua-Vorschau fehlgeschlagen. Bitte Terminal prüfen.';
+        return;
+      }
       if (labels.length !== state.labels.length) {
         band.replaceChildren();
         labels = state.labels.map(() => {
