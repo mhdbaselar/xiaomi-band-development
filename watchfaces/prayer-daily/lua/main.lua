@@ -34,7 +34,8 @@ end
 local clock = label(64, 52, 0xF1F4F2, "--:--")
 local date = label(127, 15, 0x98A5A1, "-- --.--.----")
 local caption = label(185, 14, 0x85A496, "...")
-local countdown = label(210, 35, 0x9EE4C1, "--:--:--")
+local countdownColor = 0x9EE4C1
+local countdown = label(210, 40, countdownColor, "--:--:--")
 
 label(295, 12, 0x879892, "WETTER", 14, 90)
 local temperature = label(315, 25, 0x90C6F4, "--°C", 14, 90)
@@ -56,6 +57,15 @@ local function setText(obj, value)
         obj:set { text = value }
         shown[obj] = value
     end
+end
+
+local function setCountdown(value, phase)
+    local color = phase == "iqama" and 0xFF4D4D or 0x9EE4C1
+    if countdownColor ~= color then
+        countdown:set { text_color = color }
+        countdownColor = color
+    end
+    setText(countdown, value)
 end
 
 local weekdays = { "SO", "MO", "DI", "MI", "DO", "FR", "SA" }
@@ -105,7 +115,7 @@ local function render(now)
         title = (adhanNames[state.next.id] or state.next.label) .. " in"
     end
     setText(caption, title)
-    setText(countdown, state.countdown)
+    setCountdown(state.countdown, state.phase)
     renderMetrics()
 end
 
@@ -117,7 +127,7 @@ local function refresh(force)
     local ok = pcall(render, now)
     if not ok then
         setText(caption, "Uhr synchronisieren")
-        setText(countdown, "--:--:--")
+        setCountdown("--:--:--")
     end
 end
 
